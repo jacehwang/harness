@@ -1,7 +1,7 @@
 ---
 name: pr
-description: Create or update a GitHub pull request
-allowed-tools: Bash(git status:*), Bash(git branch:*), Bash(git log:*), Bash(git diff:*), Bash(git push:*), Bash(gh pr create:*), Bash(gh pr view:*), Bash(gh pr edit:*)
+description: Creates or updates a GitHub pull request for the current branch. Use when ready to submit code changes for review.
+allowed-tools: Bash(git status:*) Bash(git branch:*) Bash(git log:*) Bash(git diff:*) Bash(git push:*) Bash(gh pr create:*) Bash(gh pr view:*) Bash(gh pr edit:*)
 ---
 
 ## Context

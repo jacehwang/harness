@@ -1,7 +1,7 @@
 ---
 name: commit
-description: Create a git commit
-allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git commit:*)
+description: Creates a git commit with proper message formatting. Use when committing staged changes with a descriptive commit message.
+allowed-tools: Bash(git add:*) Bash(git status:*) Bash(git commit:*)
 ---
 
 ## Context
