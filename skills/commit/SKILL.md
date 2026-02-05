@@ -25,6 +25,7 @@ Based on the above changes, create a single git commit.
 - Files to typically exclude: build artifacts, temporary files, .env files
 - **ALWAYS include**: `.claude/` directory files (project Claude Code settings)
 - When in doubt, ask yourself: "Is this file part of the logical change I'm committing?"
+- When using `git add` with file paths containing special characters (brackets, spaces, etc.), always quote the path: `git add "path/with[brackets]/file.ts"`
 
 ### 2. Commit message format
 
