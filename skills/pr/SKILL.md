@@ -37,24 +37,33 @@ Use `gh pr edit` to update the body with the latest commit list. **Do NOT change
 
 ### Title (for new PRs only)
 
-Format: `Concise description`
-
 Rules:
 - **English only** - Never use Korean in titles
 - **40 chars max** (excluding prefix) - Be extremely concise
 - Use short verbs: Add, Fix, Update, Remove, Refactor
+- **Ticket prefix**: If the branch name contains a ticket identifier (pattern: `ABC-123`, i.e., uppercase letters + hyphen + numbers), extract it and prepend as `[ABC-123]` prefix to the title
+
+Format:
+- With ticket: `[TASK-123] Concise description`
+- Without ticket: `Concise description`
+
+Ticket detection examples:
+- Branch `TASK-123` → `[TASK-123]`
+- Branch `TASK-123-add-feature` → `[TASK-123]`
+- Branch `feature/JIRA-456-fix-bug` → `[JIRA-456]`
+- Branch `add-new-feature` → no prefix
 
 Examples:
-- `Add proposal management`
-- `Update Claude Code config`
-- `Fix auth flow`
+- `[TASK-123] Add proposal management`
+- `[FE-42] Fix auth flow`
+- `Update Claude Code config` (no ticket in branch)
 
 ### Body
 **한국어로 작성**. Use this format with HEREDOC:
 
 **Creating new PR:**
 ```bash
-gh pr create --title "Description" --assignee @me --body "$(cat <<'EOF'
+gh pr create --title "[TASK-123] Description" --assignee @me --body "$(cat <<'EOF'
 ## 요약
 <이 PR이 하는 일을 간략히 설명>
 
