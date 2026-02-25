@@ -41,7 +41,7 @@ Rules:
 - **English only** - Never use Korean in titles
 - **40 chars max** (excluding prefix) - Be extremely concise
 - Use short verbs: Add, Fix, Update, Remove, Refactor
-- **Ticket prefix**: If the branch name contains a ticket identifier (pattern: `ABC-123`, i.e., uppercase letters + hyphen + numbers), extract it and prepend as `[ABC-123]` prefix to the title
+- **Ticket prefix**: If the branch name contains a ticket identifier (pattern: letters + hyphen + numbers, e.g., `ABC-123` or `proj-1`), extract it, **uppercase it**, and prepend as `[ABC-123]` prefix to the title
 
 Format:
 - With ticket: `[TASK-123] Concise description`
@@ -51,11 +51,14 @@ Ticket detection examples:
 - Branch `TASK-123` → `[TASK-123]`
 - Branch `TASK-123-add-feature` → `[TASK-123]`
 - Branch `feature/JIRA-456-fix-bug` → `[JIRA-456]`
+- Branch `proj-42` → `[PROJ-42]`
+- Branch `proj-42-fix-layout` → `[PROJ-42]`
 - Branch `add-new-feature` → no prefix
 
 Examples:
 - `[TASK-123] Add proposal management`
 - `[FE-42] Fix auth flow`
+- `[PROJ-42] Fix layout issue` (lowercase branch → uppercased prefix)
 - `Update Claude Code config` (no ticket in branch)
 
 ### Body
