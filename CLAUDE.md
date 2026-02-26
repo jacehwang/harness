@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is a Claude Code skills repository containing custom skills that extend Claude Code's capabilities. Skills are installed via:
 
 ```bash
-bunx skills add jacehwang/skills
+bunx skills add jacehwang/harness
 ```
 
 ## Purpose
@@ -19,7 +19,7 @@ This repository serves as a personal coding agent skills collection designed for
 ## Repository Structure
 
 ```
-skills/
+harness/
 ├── skills/
 │   ├── address-reviews/
 │   │   └── SKILL.md          # PR review comment handler skill

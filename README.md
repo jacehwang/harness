@@ -1,5 +1,5 @@
-# jacehwang/skills
+# jacehwang/harness
 
 ```bash
-bunx skills add jacehwang/skills
+bunx skills add jacehwang/harness
 ```
