@@ -21,6 +21,8 @@ This repository serves as a personal coding agent skills collection designed for
 ```
 skills/
 ├── skills/
+│   ├── address-reviews/
+│   │   └── SKILL.md          # PR review comment handler skill
 │   ├── commit/
 │   │   └── SKILL.md          # Git commit skill
 │   └── pr/
