@@ -1,0 +1,9 @@
+{
+  "name": "jace",
+  "version": "1.0.0",
+  "description": "Harness for coding agents by jacehwang.com",
+  "author": {
+    "name": "jacehwang"
+  },
+  "repository": "https://github.com/jacehwang/harness"
+}
