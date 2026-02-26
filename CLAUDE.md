@@ -1,84 +1,65 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+You are working in a Claude Code plugin repository (`jacehwang/harness`) containing custom skills and subagents.
 
-## Overview
+## Critical Rules
 
-This is a Claude Code plugin repository containing custom skills and subagents. Two installation paths to support different needs:
+**FAILURE TO FOLLOW THESE RULES PRODUCES BROKEN SKILLS/AGENTS.**
 
-- **Skills only** — Skills CLI로 설치 (`bunx skills add jacehwang/harness`). Skills만 필요한 사용자에게 권장.
-- **Skills + Subagents** — Claude Code plugin으로 설치. Subagent까지 사용하려는 사용자에게 권장.
+1. Skill directory name MUST exactly match the `name` field in its SKILL.md frontmatter.
+2. Every SKILL.md MUST contain valid YAML frontmatter with all three required fields: `name`, `description`, `allowed-tools`.
+3. Every agent file MUST contain valid YAML frontmatter with both required fields: `name`, `description`.
+4. You MUST NOT modify files under `.claude-plugin/` unless the user explicitly requests it.
+5. Skill prompt content is written in the language the user uses. PR body is 한국어. PR titles and commit messages are English only.
 
-### Installation
-
-```bash
-# Skills만 사용
-bunx skills add jacehwang/harness
-
-# Plugin으로 설치 (Skills + Subagents)
-/plugin marketplace add jacehwang/harness
-/plugin install jace@harness
-```
-
-### Development / Testing
-
-```bash
-claude --plugin-dir ./
-```
-
-## Purpose
-
-This repository serves as a personal coding agent plugin designed for:
-- Easy installation and reuse across multiple projects
-- Shareable format that others can install and use directly
-- Skills: main conversation context에서 실행 (Skills CLI: `/commit`, Plugin: `/jace:commit`)
-- Subagents: isolated context에서 실행, plugin 설치 시에만 사용 가능
-
-## Repository Structure
+## Repository Map
 
 ```
 harness/
-├── .claude-plugin/
-│   ├── plugin.json            # Plugin manifest
-│   └── marketplace.json       # Marketplace catalog
-├── skills/
+├── .claude-plugin/          # Plugin manifest + marketplace catalog (DO NOT EDIT)
+│   ├── plugin.json
+│   └── marketplace.json
+├── skills/                  # Each subdirectory = one skill
 │   ├── address-reviews/
-│   │   └── SKILL.md           # PR review comment handler skill
+│   │   └── SKILL.md
 │   ├── commit/
-│   │   └── SKILL.md           # Git commit skill
+│   │   └── SKILL.md
 │   └── pr/
-│       └── SKILL.md           # PR creation/update skill
-├── agents/                    # Subagent definitions
-│   └── <name>.md
-├── CLAUDE.md
-└── README.md
+│       └── SKILL.md
+├── agents/                  # Each .md file = one subagent
+│   └── prompt-doctor.md
+├── CLAUDE.md                # This file
+└── README.md                # User-facing documentation (한국어)
 ```
+
+## Architecture
+
+- **Skills** run in the main conversation context. Users invoke them via `/commit` (Skills CLI) or `/jace:commit` (plugin).
+- **Subagents** run in isolated context windows with their own system prompt and tools. Available only via plugin installation.
 
 ## Creating Skills
 
-Skills are defined in `SKILL.md` files within the `skills/` directory. Each skill file uses YAML frontmatter followed by the skill prompt content.
+You define a skill by creating `skills/<name>/SKILL.md`. The file uses YAML frontmatter followed by prompt content.
 
 ### Required Frontmatter Fields
 
-**name** (max 64 characters)
-- Lowercase letters, numbers, and hyphens only
-- No consecutive hyphens (`--`)
-- Must match the directory name
+| Field | Format | Constraints |
+|-------|--------|-------------|
+| `name` | String, max 64 chars | Lowercase letters, numbers, hyphens only. No consecutive hyphens (`--`). MUST match directory name. |
+| `description` | String, max 1024 chars | Third person ("Creates...", "Extracts..."). State what it does and when to use it. |
+| `allowed-tools` | Space-delimited list | See tool pattern examples below. |
 
-**description** (max 1024 characters)
-- Write in third person ("Creates...", "Extracts...")
-- Include what it does and when to use it
+### Tool Pattern Examples
 
-**allowed-tools**
-- Space-delimited list of permitted tools
-- Pattern examples:
-  - `Bash(git:*)` - Bash commands starting with `git`
-  - `Bash(gh pr:*)` - GitHub CLI PR commands
-  - `Read` - File reading
-  - `Write` - File writing
-  - `Grep` - Content search
+| Pattern | Permits |
+|---------|---------|
+| `Bash(git:*)` | Bash commands starting with `git` |
+| `Bash(gh pr:*)` | GitHub CLI PR commands |
+| `Read` | File reading |
+| `Write` | File writing |
+| `Grep` | Content search |
 
-### Example Frontmatter
+### Frontmatter Example
 
 ```yaml
 ---
@@ -88,21 +69,21 @@ allowed-tools: Bash(git:*) Read Grep
 ---
 ```
 
-### Extended Structure (Optional)
+### Extended Directory Structure (Optional)
 
-For complex skills, you can add supporting directories:
+For complex skills, you MAY add supporting directories alongside SKILL.md:
 
 ```
 my-skill/
-├── SKILL.md              # Required: Skill definition
-├── scripts/              # Optional: Executable code
-├── references/           # Optional: Additional documentation
-└── assets/               # Optional: Templates, resources
+├── SKILL.md              # Required
+├── scripts/              # Optional: executable code
+├── references/           # Optional: additional documentation
+└── assets/               # Optional: templates, resources
 ```
 
 ### Dynamic Context Syntax
 
-Use `` !`command` `` syntax to inject command output at runtime:
+Use `` !`command` `` to inject shell command output when the skill loads:
 
 ```markdown
 Current status:
@@ -112,13 +93,26 @@ Recent commits:
 !`git log --oneline -5`
 ```
 
-Commands are executed when the skill loads, providing current state to the prompt.
+These commands execute at load time, not at query time.
 
 ## Creating Subagents
 
-Subagents are defined as Markdown files in the `agents/` directory. They run in isolated context windows with their own system prompt and tool access.
+You define a subagent by creating `agents/<name>.md`. The file uses YAML frontmatter followed by the system prompt.
 
-### Subagent File Format
+### Frontmatter Fields
+
+| Field | Required | Format / Values |
+|-------|----------|-----------------|
+| `name` | Yes | Lowercase, hyphens. Unique identifier. |
+| `description` | Yes | When Claude should delegate to this subagent. |
+| `tools` | No | Comma-separated tool list. Inherits all if omitted. |
+| `model` | No | `sonnet`, `opus`, `haiku`, or `inherit` |
+| `memory` | No | `user`, `project`, or `local` |
+| `permissionMode` | No | `default`, `acceptEdits`, `dontAsk`, `plan` |
+| `maxTurns` | No | Integer. Maximum agentic turns. |
+| `hooks` | No | Lifecycle hooks scoped to this subagent. |
+
+### Subagent Example
 
 ```markdown
 ---
@@ -131,21 +125,12 @@ model: sonnet
 System prompt content here.
 ```
 
-### Available Frontmatter Fields
+## Development and Testing
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| `name` | Yes | Unique identifier (lowercase, hyphens) |
-| `description` | Yes | When Claude should delegate to this subagent |
-| `tools` | No | Allowed tools (inherits all if omitted) |
-| `model` | No | `sonnet`, `opus`, `haiku`, or `inherit` |
-| `memory` | No | Persistent memory: `user`, `project`, or `local` |
-| `permissionMode` | No | `default`, `acceptEdits`, `dontAsk`, `plan` |
-| `maxTurns` | No | Maximum agentic turns |
-| `hooks` | No | Lifecycle hooks scoped to this subagent |
+To test this plugin locally:
 
-## References
+```bash
+claude --plugin-dir ./
+```
 
-- [Agent Skills Specification](https://agentskills.io/specification)
-- [Claude Code Plugins](https://code.claude.com/docs/en/plugins)
-- [Claude Code Subagents](https://code.claude.com/docs/en/custom-subagents)
+This loads the plugin from the current directory, making all skills and subagents available for testing.
