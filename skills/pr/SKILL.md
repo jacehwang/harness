@@ -14,57 +14,31 @@ allowed-tools: Bash(git status:*) Bash(git branch:*) Bash(git log:*) Bash(git di
 - Full commit details: !`git log main..HEAD --format="- %h: %s"`
 - Changes summary: !`git diff main...HEAD --stat | tail -5`
 
-## Your task
+## Task
 
-Create a new PR or update an existing PR for the current branch.
+You MUST create a new PR or update an existing PR for the current branch.
 
 ## Pre-checks
 
-1. **Uncommitted changes**: If there are uncommitted changes, warn the user and ask if they want to commit first
-2. **Push status**: If the branch is not pushed or behind remote, push it first with `git push -u origin <branch>`
+1. **Uncommitted changes**: If there are uncommitted changes, warn the user and ask if they want to commit first.
+2. **Push status**: If the branch is not pushed or behind remote, push it with `git push -u origin <branch>`.
 
-## Behavior
+## If NO existing PR: Create new PR
 
-### If NO existing PR → Create new PR
+### Title
 
-Use `gh pr create` with title, body, and assignee.
-
-### If PR already exists → Update PR body only
-
-Use `gh pr edit` to update the body with the latest commit list. **Do NOT change the title.**
-
-## PR Format
-
-### Title (for new PRs only)
-
-Rules:
-- **English only** - Never use Korean in titles
-- **40 chars max** (excluding prefix) - Be extremely concise
-- Use short verbs: Add, Fix, Update, Remove, Refactor
-- **Ticket prefix**: If the branch name contains a ticket identifier (pattern: letters + hyphen + numbers, e.g., `ABC-123` or `proj-1`), extract it, **uppercase it**, and prepend as `[ABC-123]` prefix to the title
-
-Format:
-- With ticket: `[TASK-123] Concise description`
-- Without ticket: `Concise description`
-
-Ticket detection examples:
-- Branch `TASK-123` → `[TASK-123]`
-- Branch `TASK-123-add-feature` → `[TASK-123]`
-- Branch `feature/JIRA-456-fix-bug` → `[JIRA-456]`
-- Branch `proj-42` → `[PROJ-42]`
-- Branch `proj-42-fix-layout` → `[PROJ-42]`
-- Branch `add-new-feature` → no prefix
+- **English only, 40 chars max** (excluding prefix).
+- Use short verbs: Add, Fix, Update, Remove, Refactor.
+- **Ticket prefix**: If the branch name contains a ticket identifier (pattern: `letters-numbers`, e.g., `TASK-123`, `proj-42`), extract it, uppercase it, and prepend as `[TASK-123]` prefix.
 
 Examples:
-- `[TASK-123] Add proposal management`
-- `[FE-42] Fix auth flow`
-- `[PROJ-42] Fix layout issue` (lowercase branch → uppercased prefix)
-- `Update Claude Code config` (no ticket in branch)
+- Branch `TASK-123-add-feature` → `[TASK-123] Add feature management`
+- Branch `feature/JIRA-456-fix-bug` → `[JIRA-456] Fix auth bug`
+- Branch `proj-42-fix-layout` → `[PROJ-42] Fix layout issue`
+- Branch `add-new-feature` → `Update Claude Code config` (no prefix)
 
-### Body
-**한국어로 작성**. Use this format with HEREDOC:
+### Command
 
-**Creating new PR:**
 ```bash
 gh pr create --title "[TASK-123] Description" --assignee @me --body "$(cat <<'EOF'
 ## 요약
@@ -78,23 +52,26 @@ EOF
 )"
 ```
 
-**Updating existing PR:**
+## If PR already exists: Update PR
+
+You MUST preserve the existing title — update the body only.
+
 ```bash
 gh pr edit --body "$(cat <<'EOF'
 ## 요약
-<이 PR이 하는 일을 간략히 설명 - 기존 요약 유지 또는 확장>
+<이 PR이 하는 일을 간략히 설명 — 기존 요약 유지 또는 확장>
 
 ## 변경사항
-<모든 커밋 해시와 함께 목록으로 작성 - 전체 목록>
+<모든 커밋 해시와 함께 목록으로 작성 — 전체 목록>
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 EOF
 )"
 ```
 
-## Guidelines
+When updating, preserve the intent of the original summary while incorporating new changes.
 
-- Analyze ALL commits in the branch (not just the latest) to understand the full scope
-- Title은 영어로, Body는 한국어로 작성
-- Include all commit hashes in the body for traceability
-- When updating, preserve the intent of the original summary while incorporating new changes
+## Body Rules
+
+- **한국어로 작성**. Title은 영어, Body는 한국어.
+- Analyze all commits in the branch to understand the full scope. Include every commit hash in the body for traceability.

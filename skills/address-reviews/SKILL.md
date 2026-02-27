@@ -48,13 +48,14 @@ Each REST call MUST include `--paginate` to retrieve all pages.
      --jq '[.[] | {sha: .sha, date: .commit.committer.date}]'
    ```
 
-## Step 3: Filter by timestamp — "Needs action" vs "Likely addressed"
+## Step 3: Filter by timestamp
 
 Determine the **latest commit timestamp** from the commits list. Classify each comment:
+
 - **Needs action**: `created_at` (or `submitted_at`) is **after** the latest commit — not yet addressed
 - **Likely addressed**: timestamp is **before** the latest commit — a subsequent commit likely handled it
 
-Focus exclusively on "Needs action" comments going forward. Report "Likely addressed" as a count only.
+Carry forward only "Needs action" comments. Record the "Likely addressed" count for the summary.
 
 ## Step 4: Cross-reference resolution status
 
@@ -82,21 +83,30 @@ A comment requires action only when **both** conditions are true:
 - Timestamp says **"Needs action"** (Step 3)
 - Thread is **unresolved** (Step 4)
 
-Among the remaining actionable comments, classify each as:
-- **Actionable feedback** — requires a code change → plan it
-- **Question** — requires a reply only, no code change → note "reply only"
-- **Praise / acknowledgment** — **skip entirely**, do not include in output
+**Early exit**: If zero comments remain after this filter, inform the user that all feedback is addressed and **stop**.
 
-**Early exit**: If all "Needs action" comments are resolved, inform the user and **stop**.
+## Step 5: Classify actionable comments
 
-Present a summary:
-- Total comments (all) → filtered as noise → likely addressed → resolved → **actionable**
-- File-by-file breakdown of actionable comments with brief excerpts
-- Group by reviewer
+Classify each remaining comment as one of:
 
-## Step 5: Read source files and enter plan mode
+| Category | Criterion | Plan treatment |
+|----------|-----------|----------------|
+| **Actionable feedback** | Requires a code change | Plan the change |
+| **Question** | Requires a reply, no code change | Draft reply text |
+| **Praise / acknowledgment** | No action needed | Omit from output |
 
-Before entering plan mode, **read the source files** referenced by inline comments using the `Read` tool. The `diff_hunk` shows only the diff context — you need the current file content to plan accurate changes.
+## Step 6: Present summary
+
+Display a filtering funnel followed by the actionable detail:
+
+1. **Funnel**: Total comments → noise filtered → likely addressed → resolved → **actionable**
+2. **Actionable detail**, grouped by file:
+   - File path
+   - Each comment: reviewer, brief excerpt, category (actionable / question)
+
+## Step 7: Read source files and enter plan mode
+
+Before entering plan mode, read each source file referenced by inline comments using the `Read` tool. The `diff_hunk` shows only diff context — you MUST read the current file content to plan accurate changes.
 
 Then call `EnterPlanMode`.
 

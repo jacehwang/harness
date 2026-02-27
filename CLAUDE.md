@@ -4,21 +4,25 @@ You are working in a Claude Code plugin repository (`jacehwang/harness`) contain
 
 ## Critical Rules
 
-**FAILURE TO FOLLOW THESE RULES PRODUCES BROKEN SKILLS/AGENTS.**
+**FAILURE TO FOLLOW THESE RULES PRODUCES BROKEN SKILLS/SUBAGENTS.**
 
 1. Skill directory name MUST exactly match the `name` field in its SKILL.md frontmatter.
 2. Every SKILL.md MUST contain valid YAML frontmatter with all three required fields: `name`, `description`, `allowed-tools`.
-3. Every agent file MUST contain valid YAML frontmatter with both required fields: `name`, `description`.
-4. You MUST NOT modify files under `.claude-plugin/` unless the user explicitly requests it.
-5. Skill prompt content is written in the language the user uses. PR body is 한국어. PR titles and commit messages are English only.
+3. Every subagent file MUST contain valid YAML frontmatter with both required fields: `name`, `description`.
+4. You MUST NOT modify files under `.claude-plugin/`.
+5. If you detect a frontmatter violation (missing field, name/directory mismatch, invalid characters), fix it before proceeding and inform the user.
+
+## Language Rules
+
+- Skill prompt content: written in the language the user uses.
+- PR body: 한국어.
+- PR titles and commit messages: English only.
 
 ## Repository Map
 
 ```
 harness/
-├── .claude-plugin/          # Plugin manifest + marketplace catalog (DO NOT EDIT)
-│   ├── plugin.json
-│   └── marketplace.json
+├── .claude-plugin/          # Plugin manifest + marketplace catalog
 ├── skills/                  # Each subdirectory = one skill
 │   ├── address-reviews/
 │   │   └── SKILL.md
@@ -103,7 +107,7 @@ You define a subagent by creating `agents/<name>.md`. The file uses YAML frontma
 
 | Field | Required | Format / Values |
 |-------|----------|-----------------|
-| `name` | Yes | Lowercase, hyphens. Unique identifier. |
+| `name` | Yes | Lowercase letters, numbers, hyphens only. Unique identifier. |
 | `description` | Yes | When Claude should delegate to this subagent. |
 | `tools` | No | Comma-separated tool list. Inherits all if omitted. |
 | `model` | No | `sonnet`, `opus`, `haiku`, or `inherit` |
@@ -134,3 +138,5 @@ claude --plugin-dir ./
 ```
 
 This loads the plugin from the current directory, making all skills and subagents available for testing.
+
+**Before committing, verify:** every SKILL.md has valid frontmatter, every directory name matches its `name` field, and `.claude-plugin/` is unmodified.
