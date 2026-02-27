@@ -42,7 +42,9 @@ Plugin으로 설치하면 skill 명령에 네임스페이스가 붙습니다 (�
 
 | Agent | 설명 |
 |-------|------|
-| prompt-doctor | 프롬프트 분석 및 개선 |
+| prompt-doctor | 프롬프트 분석 및 개선 (experimental) |
+
+prompt-doctor는 아직 활발히 다듬고 있는 단계라, 동작이나 출력이 바뀔 수 있습니다.
 
 ## 개발 및 테스트
 
