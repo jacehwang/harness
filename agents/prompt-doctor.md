@@ -139,6 +139,7 @@ Record specific instances with location references (line numbers, section names,
 | **Quality** | Unsupported claim | "World's best…" without grounding |
 | **Quality** | Contradiction | "Be concise" + "Explain thoroughly" without scope separation |
 | **Relation** | Off-topic content | Style guide in a data-extraction prompt |
+| **Manner** | Generic role label | "You are an assistant that helps" without domain vocabulary |
 | **Manner** | Ambiguity | "Process the data appropriately" |
 | **Manner** | Inconsistent terms | "user" / "customer" / "client" for same entity |
 | **Manner** | Misordering | Critical constraint buried mid-paragraph |
@@ -185,7 +186,7 @@ Structural decisions determine how much attention weight each instruction receiv
 | MUST | Positional Attention (Lost in the Middle) | Place must-comply instructions in the top or bottom 20% of the prompt. Never place them in the middle third of a 50+ line prompt — transformer attention follows a U-shaped curve where the middle receives weakest weight. |
 | MUST | Chunking | Group related instructions into labeled chunks ≤ 7 items. |
 | MUST | Token Proximity | Co-locate jointly satisfied constraints. Attention correlation decays with token distance — separated constraints yield partial compliance. |
-| MUST | Schema Activation | Activate schema via role or domain framing. |
+| MUST | Schema Activation | Activate schema via role or domain framing. Use exact practitioner jargon — named methodologies, framework names, technical acronyms — as role tokens. Generic labels ("helper", "assistant") fail to prime domain-specific knowledge. |
 | MUST | Delimiter Anchoring | Insert structural markers (headers, XML tags, rules) at section boundaries between instruction groups. Unmarked boundaries in long prompts cause attention bleed across instruction groups. |
 | MUST | Self-Reference Effect | Use second-person "You MUST…" for directives. |
 | SHOULD | Von Restorff | Mark ≤ 3 critical rules with emphasis. More dilutes the effect. |
@@ -403,7 +404,7 @@ On revision requests (turns 2+):
 
 | Tier | Focus | Field | Key Principles |
 |------|-------|-------|----------------|
-| 1 | Structure | CogPsy | Serial Position Effect, Positional Attention (Lost in the Middle), Chunking, Token Proximity, Schema Activation, Von Restorff, Self-Reference Effect, Recency Effect, Context Saturation |
+| 1 | Structure | CogPsy | Serial Position Effect, Positional Attention (Lost in the Middle), Chunking, Token Proximity, Schema Activation, Lexical Priming, Von Restorff, Self-Reference Effect, Recency Effect, Context Saturation |
 | 1 | Structure | InfoDes | Labeling, Progressive Disclosure, Visual Hierarchy, Delimiter Anchoring |
 | 2 | Content | ReqEng | Explicit Acceptance Criteria, Edge Case Coverage, RFC 2119, Disambiguation, Instruction Framing, Numeric Precision |
 | 2 | Content | InsDes | Inform Objectives, Worked Example, Scaffolding, Bloom's Alignment |
@@ -431,6 +432,7 @@ On revision requests (turns 2+):
 | Position at prompt boundaries + formatting emphasis | Repeating instructions verbatim for emphasis | Verbatim duplicates consume attention budget without increasing compliance |
 | Co-locate within the same chunk | Scattering co-dependent constraints across sections | Attention correlation decays with token distance; separated constraints yield partial compliance |
 | Dedicate a line with emphasis; enforce via output format (numbered list, table) | Embedding numeric constraints in running prose | Numeric tokens lack salience in prose; autoregressive generation cannot reliably self-count |
+| Domain-specific role label with exact practitioner jargon | Generic labels ("assistant", "helper", "expert in X") without named methodologies or frameworks | Generic tokens fail to prime domain knowledge — exact jargon activates specific training clusters |
 
 ## Execution Summary
 

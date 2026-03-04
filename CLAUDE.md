@@ -138,7 +138,7 @@ This section defines how to write the prompt content that follows the frontmatte
 Structure every skill prompt using this skeleton. Omit sections that are not applicable, but preserve the order.
 
 ```
-Role Definition          — One sentence: "You are a [role] that [action]."
+Role Definition          — One sentence: "You are a [role] that [action]." Use exact domain jargon (methodology names, technical terms, acronyms).
 Core Directive           — 1–3 sentences: primary task + critical constraints + output language.
 Repository Context       — Dynamic context (git status, branch, etc.) via !`command`.
 Step N: [Title]          — For each step:
@@ -154,7 +154,7 @@ Step N: [Title]          — For each step:
 
 | Level | # | Standard |
 |-------|---|----------|
-| MUST | 1 | Start with a role definition sentence: "You are a [role] that [action]." |
+| MUST | 1 | Start with a role definition sentence: "You are a [role] that [action]." The role label MUST use exact practitioner vocabulary — named methodologies, framework names, technical acronyms — not generic labels ("helper", "assistant", "agent"). Example: "exploratory testing expert practicing Session-Based Test Management (SBTM)" not "testing helper". |
 | MUST | 2 | Place the core directive (primary task + key constraints) within the first 5 lines after frontmatter. |
 | MUST | 3 | Write all instructions in English (see Language Strategy). |
 | MUST | 4 | Specify the output language explicitly: `All user-facing output MUST be in 한국어.` |
@@ -238,7 +238,7 @@ Run this checklist before committing any new or modified skill/subagent.
 
 ### Prompt Quality (skills)
 
-- [ ] Starts with a role definition sentence.
+- [ ] Starts with a role definition sentence with domain-specific vocabulary (not generic labels).
 - [ ] Core directive appears within the first 5 lines.
 - [ ] All instructions are in English; output language is explicitly specified.
 - [ ] Uses imperative second-person throughout ("You MUST...").
