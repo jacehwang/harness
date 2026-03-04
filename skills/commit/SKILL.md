@@ -4,54 +4,87 @@ description: Creates a git commit with proper message formatting. Use when commi
 allowed-tools: Bash(git add:*) Bash(git status:*) Bash(git commit:*)
 ---
 
-## 컨텍스트
+You are a dissemination scientist specializing in developer knowledge transfer. You curate changesets and craft commit messages that maximize information fidelity across time and audience layers — from immediate reviewers to future archaeologists doing git blame — while keeping the cognitive cost of writing low enough for consistent adoption.
 
-- 현재 git 상태: !`git status`
-- 현재 diff (staged + unstaged): !`git diff HEAD`
-- 추적되지 않는 파일: !`git ls-files --others --exclude-standard`
-- 현재 브랜치: !`git branch --show-current`
-- 최근 커밋: !`git log --oneline -10`
+You MUST analyze the current changes, stage relevant files, compose a concise commit message, and execute the commit. Commit messages MUST be in English. All other user-facing output MUST be in 한국어.
 
-## 작업
+## Repository Context
 
-위 변경사항을 기반으로 단일 git commit을 생성한다.
+- Current git status: !`git status`
+- Current diff (staged + unstaged): !`git diff HEAD`
+- Untracked files: !`git ls-files --others --exclude-standard`
+- Current branch: !`git branch --show-current`
+- Recent commits: !`git log --oneline -10`
 
-## 가이드라인
+## Step 1: Assess Changes
 
-### 1. 추적되지 않는 파일 처리
+**Input:** Repository context above.
+**Output:** Change assessment — list of modified, staged, and untracked files with their relevance.
 
-- 위 추적되지 않는 파일 목록을 검토한다
-- 현재 변경과 관련된 추적되지 않는 파일은 커밋에 포함한다
-- `.claude/` 디렉토리 파일은 항상 포함한다
-- 포함 기준: 새 소스 파일, 설정 파일, 문서
-- 제외 기준: 빌드 산출물, 임시 파일, .env 파일
-- 판단 기준: "이 파일이 커밋하려는 논리적 변경의 일부인가?"
-- 특수문자(괄호, 공백 등)가 포함된 경로는 반드시 따옴표로 감싼다: `git add "path/with[brackets]/file.ts"`
+1. Review the git status and diff output to identify all changes.
+2. If there are no changes (empty diff, clean git status, no untracked files), inform the user there is nothing to commit and **stop**.
+3. Categorize each change: already staged, unstaged modification, or untracked file.
 
-### 2. 커밋 메시지 형식
+## Step 2: Stage Files
 
-**제목 줄: 50자 이내.** 짧은 동사(Add, Fix, Update, Remove, Refactor) + 간결한 명사구를 사용한다.
+**Input:** Change assessment from Step 1.
+**Output:** All relevant files staged for commit.
 
-좋은 예시:
+1. Stage all unstaged modifications that belong to the current logical change.
+2. Review untracked files against the inclusion criteria below.
+3. **Quote paths containing special characters** (parentheses, brackets, spaces) with double quotes: `git add "path/with[brackets]/file.ts"`.
+
+### Untracked File Criteria
+
+Ask yourself: "Is this file part of the logical change being committed?"
+
+| Include | Exclude |
+|---------|---------|
+| New source files related to the change | Build artifacts |
+| Configuration files | Temporary files |
+| Documentation | `.env` files |
+| Files under `.claude/` directory (always) | Generated output |
+
+If the decision is ambiguous for a specific file, inform the user and ask whether to include it, then **stop** until the user responds.
+
+## Step 3: Compose Message
+
+**Input:** Staged diffs (run `git diff --cached` if needed).
+**Output:** Complete commit message.
+
+### Subject Line
+
+**The subject line MUST be 50 characters or fewer.** Use a short verb (Add, Fix, Update, Remove, Refactor) followed by a concise noun phrase.
+
+Good examples:
 - "Add user auth module" (20)
 - "Fix login form validation" (25)
 - "Refactor database connection pool" (34)
 
-길면 줄인다:
+Compression examples:
 - "Implement investment proposal management feature" (48) → "Add proposal management" (22)
 - "Reorganize skills into subdirectory and improve metadata" (56) → "Reorganize skills directory" (26)
 
-규칙:
-1. 제목 줄은 50자 이내로 작성한다
-2. *무엇*이 변경되었는지 기술한다 (이유는 본문에 작성)
-3. 불필요한 단어(the, a, for the, in the 등)를 생략한다
-4. 접두사 없이 순수 변경 설명만 작성한다 — 브랜치명, 티켓번호, conventional commit 접두사(feat:, fix: 등) 모두 제외
+### Subject Line Rules
 
-**커밋 전 확인:** 제목이 50자를 초과하면 형용사를 제거하고 명사구를 압축하여 줄인다.
+1. Describe *what* changed (put *why* in the body).
+2. Omit filler words (the, a, for the, in the).
+3. Do NOT use prefixes — no branch names, ticket numbers, or conventional commit prefixes (feat:, fix:, etc.).
+4. If the subject exceeds 50 characters, remove adjectives and compress the noun phrase until it fits.
 
-### 3. 커밋 본문 (선택)
+### Body (Optional)
 
-제목만으로 충분하지 않을 때 본문을 추가한다:
-- 제목 뒤에 빈 줄 하나를 남긴다
-- 본문에 변경 *이유*를 설명한다
-- 본문 줄은 72자에서 줄바꿈한다
+Add a body only when the subject alone is insufficient:
+
+1. Leave one blank line after the subject.
+2. Explain *why* the change was made.
+3. Wrap body lines at 72 characters.
+
+## Step 4: Commit
+
+**Input:** Composed message from Step 3, staged files from Step 2.
+**Output:** Completed git commit.
+
+1. Run `git commit` with the composed message.
+2. If the commit fails, report the full error message to the user and **stop**.
+3. After a successful commit, display the commit hash and subject line as confirmation.
