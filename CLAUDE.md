@@ -25,14 +25,10 @@ You are working in a Claude Code plugin repository (`jacehwang/harness`) contain
 - Commit messages and PR titles: English only.
 - PR body: 한국어.
 
-### Migration Note
-
-Existing skills with Korean instruction text (`commit`, `pr`, `explore-test`, `address-reviews`) will be converted to English instructions on their next modification. Do not rewrite them solely for language migration.
-
 ## Architecture
 
-- **Skills** run in the main conversation context. Users invoke them via `/commit` (Skills CLI) or `/jace:commit` (plugin).
-- **Subagents** run in isolated context windows with their own system prompt and tools. Available only via plugin installation. Because subagents have no access to the parent conversation, their prompts must be self-contained.
+- **Skills** run in the main conversation context. The text after SKILL.md frontmatter is called the **prompt body**. Users invoke them via `/commit` (Skills CLI) or `/jace:commit` (plugin).
+- **Subagents** run in isolated context windows. The text after agents/*.md frontmatter is called the **system prompt**. Because subagents have no access to the parent conversation, their system prompt must be self-contained.
 
 ## Repository Map
 
@@ -58,7 +54,7 @@ harness/
 
 ## Creating Skills
 
-You define a skill by creating `skills/<name>/SKILL.md`. The file uses YAML frontmatter followed by prompt content.
+You define a skill by creating `skills/<name>/SKILL.md`. The file uses YAML frontmatter followed by the prompt body.
 
 ### Packaging
 
@@ -92,6 +88,17 @@ allowed-tools: Bash(git:*) Read Grep
 ---
 ```
 
+#### Description Field Guide
+
+Follow a two-sentence formula. This applies to both skills and subagents.
+
+1. **Sentence 1 — What it does**: Start with a third-person action verb ("Creates...", "Explores...", "Fetches..."). State the primary action and output.
+2. **Sentence 2 — When to use it**: Start with "Use when..." and describe the trigger condition from the user's perspective.
+
+Good: `Creates a git commit with proper message formatting. Use when committing staged changes with a descriptive commit message.`
+
+Bad: `A tool for commits.` (no action verb, no trigger condition)
+
 #### Extended Directory Structure (Optional)
 
 For complex skills, you MAY add supporting directories alongside SKILL.md:
@@ -118,20 +125,7 @@ Recent commits:
 
 These commands execute at load time, not at query time.
 
-#### Description Field Guide
-
-Follow a two-sentence formula. This applies to both skills and subagents.
-
-1. **Sentence 1 — What it does**: Start with a third-person action verb ("Creates...", "Explores...", "Fetches..."). State the primary action and output.
-2. **Sentence 2 — When to use it**: Start with "Use when..." and describe the trigger condition from the user's perspective.
-
-Good: `Creates a git commit with proper message formatting. Use when committing staged changes with a descriptive commit message.`
-
-Bad: `A tool for commits.` (no action verb, no trigger condition)
-
 ### Prompt Body
-
-This section defines how to write the prompt content that follows the frontmatter. The prompt body is the core of a skill — it determines what the agent actually does.
 
 #### Scaffold Template
 
@@ -156,16 +150,15 @@ Step N: [Title]          — For each step:
 |-------|---|----------|
 | MUST | 1 | Start with a role definition sentence: "You are a [role] that [action]." The role label MUST use exact practitioner vocabulary — named methodologies, framework names, technical acronyms — not generic labels ("helper", "assistant", "agent"). Example: "exploratory testing expert practicing Session-Based Test Management (SBTM)" not "testing helper". |
 | MUST | 2 | Place the core directive (primary task + key constraints) within the first 5 lines after frontmatter. |
-| MUST | 3 | Write all instructions in English (see Language Strategy). |
-| MUST | 4 | Specify the output language explicitly: `All user-facing output MUST be in 한국어.` |
-| MUST | 5 | Use imperative second-person: "You MUST...", not "The agent should..." |
-| MUST | 6 | Define an explicit halt condition for every failure path: "If [X fails], inform the user and **stop**." |
-| MUST | 7 | Use consistent terminology — one term per concept throughout the prompt. Do not alternate between synonyms (e.g., pick "ticket" or "issue", not both). |
-| SHOULD | 8 | Mark each step's Input and Output to create a clear data flow between steps. |
-| SHOULD | 9 | Identify parallel execution opportunities explicitly: "Call these **in parallel**:". |
-| SHOULD | 10 | Include a concrete example for any non-obvious output format. |
-| SHOULD | 11 | Place critical constraints in the top or bottom 20% of the prompt body — the middle receives weakest LLM attention. |
-| MAY | 12 | Use bold on up to 3 key rules for emphasis. More dilutes the effect. |
+| MUST | 3 | Follow Language Strategy: English instructions, explicit output language specification (`All user-facing output MUST be in 한국어.`). |
+| MUST | 4 | Use imperative second-person: "You MUST...", not "The agent should..." |
+| MUST | 5 | Define an explicit halt condition for every failure path: "If [X fails], inform the user and **stop**." |
+| MUST | 6 | Use consistent terminology — one term per concept throughout the prompt. Do not alternate between synonyms (e.g., pick "ticket" or "issue", not both). |
+| SHOULD | 7 | Mark each step's Input and Output to create a clear data flow between steps. |
+| SHOULD | 8 | Identify parallel execution opportunities explicitly: "Call these **in parallel**:". |
+| SHOULD | 9 | Include a concrete example for any non-obvious output format. |
+| SHOULD | 10 | Place critical constraints in the top or bottom 20% of the prompt body — the middle receives weakest LLM attention. |
+| MAY | 11 | Use bold on up to 3 key rules for emphasis. More dilutes the effect. |
 
 ## Creating Subagents
 
@@ -181,8 +174,8 @@ You define a subagent by creating `agents/<name>.md`. The file uses YAML frontma
 | `description` | Yes | Follow the Description Field Guide (see Creating Skills → Packaging). |
 | `tools` | No | Comma-separated tool list. Inherits all if omitted. |
 | `model` | No | `sonnet`, `opus`, `haiku`, or `inherit` |
-| `memory` | No | `user`, `project`, or `local` |
-| `permissionMode` | No | `default`, `acceptEdits`, `dontAsk`, `plan` |
+| `memory` | No | `user` (user-scoped persistence), `project` (project-scoped), `local` (session-only). Inherits parent if omitted. |
+| `permissionMode` | No | `default` (prompt for approval), `acceptEdits` (auto-approve edits), `dontAsk` (auto-approve all), `plan` (plan-only mode). |
 | `maxTurns` | No | Integer. Maximum agentic turns. |
 | `hooks` | No | Lifecycle hooks scoped to this subagent. |
 
@@ -227,34 +220,19 @@ Revision Protocol        — How to handle follow-up requests and iteration.
 
 ## Quality Checklist
 
-Run this checklist before committing any new or modified skill/subagent.
+Run before committing any new or modified skill/subagent.
 
-### Packaging (all artifacts)
-
-- [ ] YAML frontmatter is valid and contains all required fields.
-- [ ] `name` matches the directory name (skills) or filename (subagents).
-- [ ] `description` follows the two-sentence formula (action verb + trigger condition).
+### All Artifacts
+- [ ] Frontmatter: valid YAML, all required fields present, `name` matches directory/filename.
+- [ ] Description follows the two-sentence formula (action verb + trigger condition).
 - [ ] `.claude-plugin/` is unmodified.
 
-### Prompt Quality (skills)
+### Skills
+- [ ] Prompt body follows all MUST-level Writing Standards (#1–#6).
+- [ ] SHOULD-level standards (#7–#10) applied where applicable.
 
-- [ ] Starts with a role definition sentence with domain-specific vocabulary (not generic labels).
-- [ ] Core directive appears within the first 5 lines.
-- [ ] All instructions are in English; output language is explicitly specified.
-- [ ] Uses imperative second-person throughout ("You MUST...").
-- [ ] Every failure path has an explicit halt or skip condition.
-- [ ] Terminology is consistent — no synonym alternation for the same concept.
-- [ ] Multi-step workflows label Input/Output for each step.
-- [ ] Critical constraints are in the top or bottom 20% of the prompt body.
-- [ ] Non-obvious output formats include a concrete example or template.
-- [ ] Parallel execution opportunities are explicitly marked.
-
-### Subagent-Specific (when applicable)
-
-- [ ] System prompt is self-contained (no dependency on parent conversation context).
-- [ ] Tool usage policy is explicitly defined.
-- [ ] Includes a self-validation step before final output.
-- [ ] Revision protocol handles follow-up requests.
+### Subagents
+- [ ] System prompt is self-contained with tool usage policy, self-validation step, and revision protocol.
 
 ## Development and Testing
 
