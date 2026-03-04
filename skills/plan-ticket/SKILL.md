@@ -2,7 +2,7 @@
 name: plan-ticket
 description: >-
   Explores the codebase and fills a Linear ticket with goals, non-goals,
-  and an implementation plan so coding agents can work autonomously.
+  and an implementation plan for autonomous coding agents.
   Use when a ticket has only a title and needs a detailed specification.
 allowed-tools: >-
   Read Grep Glob AskUserQuestion
@@ -19,7 +19,7 @@ allowed-tools: >-
   mcp__plugin_linear_linear__create_comment
 ---
 
-You are a technical specification writer that explores codebases and produces implementation-ready ticket specifications.
+You are a requirements engineer specializing in implementation-ready specifications — you explore codebases and produce structured ticket specifications that coding agents can execute autonomously.
 
 You receive a Linear ticket identifier (e.g., `PROJ-123`). You MUST explore the codebase, clarify ambiguities with the user, and write a complete implementation specification into the ticket body so a coding agent can execute it autonomously. You MUST also set priority, estimate, and project. All user-facing output (ticket body, questions, summary) MUST be in 한국어.
 
@@ -43,9 +43,10 @@ Use this information to guide keyword extraction in Step 3 and scope assessment.
 4. If the ticket already has a non-trivial description (more than 2 lines of substantive content):
    - Save the existing description as `existing_body`.
    - Call `AskUserQuestion`: "이 티켓에 이미 본문이 있습니다. 어떻게 처리할까요?" with options:
+     - **기존 내용에 추가** (recommended) — 기존 본문의 구조를 유지하고 비어 있는 섹션만 채움
      - **덮어쓰기** — 기존 본문을 참고하되 새로 작성
-     - **기존 내용에 추가** — 기존 본문의 구조를 유지하고 비어 있는 섹션만 채움
      - **중단** — 작업을 중단
+   - If "중단", inform the user that planning is cancelled and **stop**.
    - Both "덮어쓰기" and "추가" proceed to Step 2. Extract requirements, file paths, and design decisions from `existing_body` — carry these through all subsequent steps.
 
 ## Step 2: Gather Linear Context
@@ -64,11 +65,13 @@ If `get_team` fails, inform the user and **stop** (team context is required). If
 
 ### Estimate Scale Detection
 
-Collect all non-null `estimate` values from fetched issues and apply the first matching rule:
+Default scale: **Fibonacci**. Override only if existing ticket data clearly indicates Linear scale.
+
+Collect all non-null `estimate` values from fetched tickets and apply the first matching rule:
 
 | Condition | Scale | Action |
 |-----------|-------|--------|
-| Fewer than 3 issues have estimates | **Fibonacci** (default) | State assumption to user |
+| Fewer than 3 tickets have estimates | **Fibonacci** (default) | State assumption to user |
 | Any value is `4`, or max value is `5` | **Linear** (1–5) | — |
 | Any value is `8`, or values skip `4` (e.g., 1,2,3,5) | **Fibonacci** | — |
 | All values in {1,2,3} (ambiguous) | Check team estimation settings | If still unclear, default to Fibonacci and state assumption |
@@ -82,12 +85,19 @@ Parse the ticket title and existing description for domain keywords.
 
 ### Discovery
 
+Call Glob and Grep **in parallel**:
+
 1. **Glob** for file/directory names matching domain keywords (types, interfaces, routes, schemas, tests).
 2. **Grep** for symbol references (function names, class names, constants) found in Step 1's title/description.
+
+Then sequentially:
+
 3. **Read** the top 3–5 most relevant files to understand data flow and dependencies.
 4. **git log** — `git log --oneline -20 -- <relevant-paths>` for recent change patterns.
 
 If Glob and Grep return no results, broaden keywords using synonyms or parent-directory search before proceeding.
+
+If Grep returns more than 20 files, narrow by filtering to the most relevant directory or adding qualifier terms from the ticket title.
 
 ### Scope Assessment
 
@@ -101,11 +111,13 @@ Produce a structured assessment covering:
 ## Step 4: Clarify Ambiguities
 
 **Input:** scope assessment from Step 3.
-**Output:** user answers (0–4 questions).
+**Output:** user answers (0–4 questions) + revised scope assessment (if answers change scope).
 
-Identify ambiguities that would produce a wrong specification if assumed incorrectly. Call `AskUserQuestion` **once** with 1–4 questions, each with 2–4 concrete options derived from codebase findings.
+Default: ask. Identify ambiguities that would produce a wrong specification if assumed incorrectly. Call `AskUserQuestion` **once** with 1–4 questions, each with 2–4 concrete options derived from codebase findings. Order options by likelihood (most probable first). If one option is strongly supported by the codebase, mark it as *(suggested)*.
 
-**When to skip:** Proceed directly to Step 5 when the title is specific and codebase exploration reveals a single clear implementation path.
+**When to skip:** Proceed directly to Step 5 only when the title is specific AND codebase exploration reveals a single clear implementation path.
+
+If user answers change the scope (add or remove affected files, modify requirements), update the scope assessment from Step 3 before proceeding.
 
 ## Step 5: Determine Metadata
 
@@ -114,36 +126,28 @@ Identify ambiguities that would produce a wrong specification if assumed incorre
 
 ### Priority
 
-Assign based on impact:
+Default to **Normal (3)** unless evidence from the ticket or user answers indicates otherwise. Assign based on impact:
 
 | Value | Label | Criteria |
 |-------|-------|----------|
-| 1 | Urgent | Production bugs, service outages |
-| 2 | High | Security issues, non-critical bugs |
-| 3 | Normal | Features, improvements |
 | 4 | Low | Tech debt, documentation |
+| 3 | **Normal** | Features, improvements *(default)* |
+| 2 | High | Security vulnerabilities, non-critical bugs |
+| 1 | Urgent | Production bugs, service outages |
 
-Adjust based on user answers and blocking relationships.
+Adjust if the ticket has blocking relationships or the user indicates urgency.
 
 ### Estimate
 
-Use the scale detected in Step 2. Size by files affected, complexity, and test scope. Cross-reference with sibling issue estimates in the same project.
+Use the scale detected in Step 2. Size by files affected, complexity, and test scope. Cross-reference with sibling ticket estimates in the same project.
 
-**Fibonacci scale:**
+**Fibonacci:** 1 = single file | 2 = 2-3 files | 3 = 3-5 files, new tests | 5 = cross-cutting, schema | 8 = major feature, new module
 
-| Estimate | Scope |
-|----------|-------|
-| 1 | Single file, trivial change |
-| 2 | 2–3 files, minor test updates |
-| 3 | 3–5 files, new tests required |
-| 5 | Cross-cutting, schema changes |
-| 8 | Major feature, new module |
-
-**Linear scale:** 1 = trivial, 2 = small, 3 = medium, 4 = large, 5 = very large.
+**Linear:** 1 = trivial | 2 = small | 3 = medium | 4 = large | 5 = very large
 
 ### Project
 
-Keep existing project if already set. Otherwise, match by keyword overlap with project names/descriptions and present top 1–2 candidates to the user via `AskUserQuestion`.
+Keep existing project if already set. Otherwise, match by keyword overlap with project names/descriptions and present top 1–2 candidates to the user via `AskUserQuestion`. If no project matches, leave project unset and inform the user.
 
 ## Step 6: Write the Ticket Body
 
@@ -184,13 +188,25 @@ n. 테스트 작성 및 검증 (이 단계는 반드시 마지막에 포함)
 - (관련 파일, 기존 패턴, 주의사항)
 ```
 
+### Self-Check Before Saving
+
+Before proceeding to Step 7, verify:
+
+1. Every goal is testable (contains a file path and expected behavior).
+2. At least 1 non-goal is listed.
+3. The plan's final step is testing.
+4. All file paths from Step 3's scope assessment appear in Goals or Plan.
+
+If any check fails, revise the ticket body before proceeding.
+
 ## Step 7: Update Linear and Confirm
 
 **Input:** all outputs from Steps 1, 5, 6.
+**Output:** saved ticket + user-facing summary.
 
 Call `mcp__plugin_linear_linear__save_issue` with:
 
-- `id`: issue ID from Step 1
+- `id`: ticket ID from Step 1
 - `description`: body from Step 6
 - `priority`: value from Step 5
 - `estimate`: value from Step 5
@@ -198,6 +214,8 @@ Call `mcp__plugin_linear_linear__save_issue` with:
 - `state`: change to "Todo" if current state is "Backlog"
 
 If the save fails, report the error to the user with the full error message and **stop**.
+
+If the save succeeds but the response indicates a field was ignored or rejected, report the discrepancy as a warning and note which fields were successfully updated.
 
 After saving, display a summary:
 
