@@ -15,7 +15,6 @@ allowed-tools: >-
   mcp__plugin_linear_linear__get_team
   mcp__plugin_linear_linear__list_issue_labels
   mcp__plugin_linear_linear__list_issue_statuses
-  mcp__plugin_linear_linear__list_issues
   mcp__plugin_linear_linear__create_comment
 ---
 
@@ -52,29 +51,15 @@ Use this information to guide keyword extraction in Step 3 and scope assessment.
 ## Step 2: Gather Linear Context
 
 **Input:** `team` from Step 1.
-**Output:** team settings, project list, label list, detected estimate scale.
+**Output:** team settings, project list, label list.
 
 Call these **in parallel**, passing `teamId` from Step 1's `team` field:
 
 1. `mcp__plugin_linear_linear__get_team` with `teamId` — team settings.
 2. `mcp__plugin_linear_linear__list_projects` with `teamId` — candidate projects.
 3. `mcp__plugin_linear_linear__list_issue_labels` with `teamId` — available labels.
-4. `mcp__plugin_linear_linear__list_issues` with `teamId`, `limit: 50`, `orderBy: updatedAt` — for estimate scale inference.
 
 If `get_team` fails, inform the user and **stop** (team context is required). If any other call fails, proceed with the data from successful calls.
-
-### Estimate Scale Detection
-
-Default scale: **Fibonacci**. Override only if existing ticket data clearly indicates Linear scale.
-
-Collect all non-null `estimate` values from fetched tickets and apply the first matching rule:
-
-| Condition | Scale | Action |
-|-----------|-------|--------|
-| Fewer than 3 tickets have estimates | **Fibonacci** (default) | State assumption to user |
-| Any value is `4`, or max value is `5` | **Linear** (1–5) | — |
-| Any value is `8`, or values skip `4` (e.g., 1,2,3,5) | **Fibonacci** | — |
-| All values in {1,2,3} (ambiguous) | Check team estimation settings | If still unclear, default to Fibonacci and state assumption |
 
 ## Step 3: Explore the Codebase
 
@@ -121,7 +106,7 @@ If user answers change the scope (add or remove affected files, modify requireme
 
 ## Step 5: Determine Metadata
 
-**Input:** team data and estimate scale from Step 2, scope assessment from Step 3, user answers from Step 4.
+**Input:** team data from Step 2, scope assessment from Step 3, user answers from Step 4.
 **Output:** priority value, estimate value, project ID.
 
 ### Priority
@@ -139,11 +124,15 @@ Adjust if the ticket has blocking relationships or the user indicates urgency.
 
 ### Estimate
 
-Use the scale detected in Step 2. Size by files affected, complexity, and test scope. Cross-reference with sibling ticket estimates in the same project.
+Use the Fibonacci scale. Map directly from Step 3's scope assessment:
 
-**Fibonacci:** 1 = single file | 2 = 2-3 files | 3 = 3-5 files, new tests | 5 = cross-cutting, schema | 8 = major feature, new module
-
-**Linear:** 1 = trivial | 2 = small | 3 = medium | 4 = large | 5 = very large
+| Estimate | Criteria |
+|----------|----------|
+| 1 | Single file change, no new files, no schema changes |
+| 2 | 2–3 files changed, minor test updates |
+| 3 | 3–5 files changed, new test files needed |
+| 5 | Cross-cutting changes (6+ files), schema/migration changes, or new module |
+| 8 | Major feature: new module with new schema, extensive test coverage |
 
 ### Project
 
@@ -223,7 +212,7 @@ After saving, display a summary:
 |------|-------|
 | Ticket | identifier and title |
 | Priority | value and label |
-| Estimate | value and scale |
+| Estimate | value |
 | Project | name (or unchanged) |
 | Goals | count |
 | Non-goals | count |
