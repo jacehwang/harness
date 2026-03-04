@@ -19,18 +19,20 @@ allowed-tools: >-
   mcp__plugin_linear_linear__create_comment
 ---
 
-You receive a Linear ticket identifier as an argument (e.g., `PROJ-123`). You MUST explore the codebase, clarify ambiguities with the user, and write a complete implementation specification into the ticket body so a coding agent can execute it autonomously. You also set priority, estimate, and project.
+You are a technical specification writer that explores codebases and produces implementation-ready ticket specifications.
 
-## Context
+You receive a Linear ticket identifier (e.g., `PROJ-123`). You MUST explore the codebase, clarify ambiguities with the user, and write a complete implementation specification into the ticket body so a coding agent can execute it autonomously. You MUST also set priority, estimate, and project. All user-facing output (ticket body, questions, summary) MUST be in 한국어.
 
-Use the following repository information to guide keyword extraction in Step 3 and scope assessment.
+## Repository Context
+
+Use this information to guide keyword extraction in Step 3 and scope assessment.
 
 - Repository root: !`git rev-parse --show-toplevel`
 - Current branch: !`git branch --show-current`
 - Primary languages: !`git ls-files | sed 's/.*\.//' | sort | uniq -c | sort -rn | head -5`
 - Top-level structure: !`ls -d */ 2>/dev/null | head -20`
 
-## Step 1: Fetch the ticket
+## Step 1: Fetch the Ticket
 
 **Input:** argument from user.
 **Output:** extracted ticket fields + `existing_body` (if applicable).
@@ -44,9 +46,9 @@ Use the following repository information to guide keyword extraction in Step 3 a
      - **덮어쓰기** — 기존 본문을 참고하되 새로 작성
      - **기존 내용에 추가** — 기존 본문의 구조를 유지하고 비어 있는 섹션만 채움
      - **중단** — 작업을 중단
-   - Both "덮어쓰기" and "추가" proceed to Step 2. Extract requirements, file paths, and design decisions from `existing_body` for use in Step 5.
+   - Both "덮어쓰기" and "추가" proceed to Step 2. Extract requirements, file paths, and design decisions from `existing_body` — carry these through all subsequent steps.
 
-## Step 2: Gather Linear context
+## Step 2: Gather Linear Context
 
 **Input:** `team` from Step 1.
 **Output:** team settings, project list, label list, detected estimate scale.
@@ -58,42 +60,54 @@ Call these **in parallel**, passing `teamId` from Step 1's `team` field:
 3. `mcp__plugin_linear_linear__list_issue_labels` with `teamId` — available labels.
 4. `mcp__plugin_linear_linear__list_issues` with `teamId`, `limit: 50`, `orderBy: updatedAt` — for estimate scale inference.
 
-If any individual call fails, proceed with the data from successful calls. Only **stop** if `get_team` fails (team context is required).
+If `get_team` fails, inform the user and **stop** (team context is required). If any other call fails, proceed with the data from successful calls.
 
-**Estimate scale detection:** Collect all non-null `estimate` values from fetched issues.
-1. If fewer than 3 issues have estimates, default to Fibonacci and state this assumption to the user.
-2. If any value is in {4} or the maximum value is 5, the scale is **Linear** (1-5).
-3. If any value is in {8} or values skip 4 (e.g., 1, 2, 3, 5), the scale is **Fibonacci**.
-4. If all values are in {1, 2, 3} (ambiguous overlap), check the team's estimation settings from `get_team`. If still unclear, default to Fibonacci and state this assumption.
+### Estimate Scale Detection
 
-## Step 3: Explore the codebase
+Collect all non-null `estimate` values from fetched issues and apply the first matching rule:
+
+| Condition | Scale | Action |
+|-----------|-------|--------|
+| Fewer than 3 issues have estimates | **Fibonacci** (default) | State assumption to user |
+| Any value is `4`, or max value is `5` | **Linear** (1–5) | — |
+| Any value is `8`, or values skip `4` (e.g., 1,2,3,5) | **Fibonacci** | — |
+| All values in {1,2,3} (ambiguous) | Check team estimation settings | If still unclear, default to Fibonacci and state assumption |
+
+## Step 3: Explore the Codebase
 
 **Input:** `title`, `existing_body` (if any), repository context.
 **Output:** list of relevant file paths, scope assessment.
 
-Parse the ticket title and existing description for domain keywords. Follow this search strategy in order:
+Parse the ticket title and existing description for domain keywords.
+
+### Discovery
 
 1. **Glob** for file/directory names matching domain keywords (types, interfaces, routes, schemas, tests).
 2. **Grep** for symbol references (function names, class names, constants) found in Step 1's title/description.
-3. **Read** the top 3-5 most relevant files to understand data flow and dependencies.
+3. **Read** the top 3–5 most relevant files to understand data flow and dependencies.
 4. **git log** — `git log --oneline -20 -- <relevant-paths>` for recent change patterns.
 
-Produce a scope assessment:
+If Glob and Grep return no results, broaden keywords using synonyms or parent-directory search before proceeding.
+
+### Scope Assessment
+
+Produce a structured assessment covering:
+
 - Files to modify (list paths)
 - New files to create (list paths)
 - Test files affected or to create
 - Schema/migration changes needed (yes/no)
 
-## Step 4: Clarify ambiguities
+## Step 4: Clarify Ambiguities
 
 **Input:** scope assessment from Step 3.
-**Output:** user answers (0-4 questions).
+**Output:** user answers (0–4 questions).
 
-Identify ambiguities that would produce a wrong specification if assumed incorrectly. Call `AskUserQuestion` **once** with 1-4 questions, each with 2-4 concrete options derived from codebase findings.
+Identify ambiguities that would produce a wrong specification if assumed incorrectly. Call `AskUserQuestion` **once** with 1–4 questions, each with 2–4 concrete options derived from codebase findings.
 
-**Skip this step** when the title is specific and codebase exploration reveals a single clear path.
+**When to skip:** Proceed directly to Step 5 when the title is specific and codebase exploration reveals a single clear implementation path.
 
-## Step 5: Determine metadata
+## Step 5: Determine Metadata
 
 **Input:** team data and estimate scale from Step 2, scope assessment from Step 3, user answers from Step 4.
 **Output:** priority value, estimate value, project ID.
@@ -120,8 +134,8 @@ Use the scale detected in Step 2. Size by files affected, complexity, and test s
 | Estimate | Scope |
 |----------|-------|
 | 1 | Single file, trivial change |
-| 2 | 2-3 files, minor test updates |
-| 3 | 3-5 files, new tests required |
+| 2 | 2–3 files, minor test updates |
+| 3 | 3–5 files, new tests required |
 | 5 | Cross-cutting, schema changes |
 | 8 | Major feature, new module |
 
@@ -129,14 +143,21 @@ Use the scale detected in Step 2. Size by files affected, complexity, and test s
 
 ### Project
 
-Keep existing project if set. Otherwise, match by keyword overlap with project names/descriptions and present top 1-2 candidates to the user via `AskUserQuestion`.
+Keep existing project if already set. Otherwise, match by keyword overlap with project names/descriptions and present top 1–2 candidates to the user via `AskUserQuestion`.
 
-## Step 6: Write the ticket body
+## Step 6: Write the Ticket Body
 
 **Input:** scope assessment from Step 3, user answers from Step 4, metadata from Step 5, `existing_body` (if applicable).
 **Output:** complete ticket body in 한국어.
 
-Write the description using this template. Each rule is embedded at the relevant section:
+### `existing_body` Handling
+
+- **덮어쓰기:** Reflect `existing_body`'s requirements and design decisions in the new body, but write all sections fresh.
+- **추가:** Preserve `existing_body`'s existing section structure and fill only empty sections.
+
+### Template
+
+Write the description using this structure:
 
 ```
 ## Goals
@@ -163,13 +184,12 @@ n. 테스트 작성 및 검증 (이 단계는 반드시 마지막에 포함)
 - (관련 파일, 기존 패턴, 주의사항)
 ```
 
-**`existing_body` 처리:** 사용자가 "덮어쓰기"를 선택한 경우 `existing_body`의 요구사항과 설계 결정을 새 본문에 반영한다. "추가"를 선택한 경우 `existing_body`의 기존 섹션 구조를 유지하고 비어 있는 섹션만 채운다.
-
-## Step 7: Update Linear and confirm
+## Step 7: Update Linear and Confirm
 
 **Input:** all outputs from Steps 1, 5, 6.
 
 Call `mcp__plugin_linear_linear__save_issue` with:
+
 - `id`: issue ID from Step 1
 - `description`: body from Step 6
 - `priority`: value from Step 5
@@ -177,7 +197,7 @@ Call `mcp__plugin_linear_linear__save_issue` with:
 - `project`: only if changed
 - `state`: change to "Todo" if current state is "Backlog"
 
-If the save fails, inform the user with the error and **stop**.
+If the save fails, report the error to the user with the full error message and **stop**.
 
 After saving, display a summary:
 
@@ -192,3 +212,5 @@ After saving, display a summary:
 | Implementation steps | count |
 
 Then call `mcp__plugin_linear_linear__create_comment` with a brief summary of the codebase analysis and planning performed.
+
+**If the comment call fails, report the warning but treat the overall task as successful — the ticket body is already saved.**
