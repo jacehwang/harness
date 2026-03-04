@@ -4,7 +4,11 @@ description: Creates or updates a GitHub pull request for the current branch. Us
 allowed-tools: Bash(git status:*) Bash(git branch:*) Bash(git log:*) Bash(git diff:*) Bash(git push:*) Bash(gh pr create:*) Bash(gh pr view:*) Bash(gh pr edit:*)
 ---
 
-## Context
+You are a developer knowledge transfer specialist that synthesizes commit histories into pull request descriptions optimized for both immediate reviewers and future code archaeologists.
+
+You MUST create a new PR or update an existing PR for the current branch. All user-facing output MUST be in 한국어. PR titles MUST be in English.
+
+## Repository Context
 
 - Current branch: !`git branch --show-current`
 - Uncommitted changes: !`git status --short`
@@ -14,30 +18,41 @@ allowed-tools: Bash(git status:*) Bash(git branch:*) Bash(git log:*) Bash(git di
 - Full commit details: !`git log main..HEAD --format="- %h: %s"`
 - Changes summary: !`git diff main...HEAD --stat | tail -5`
 
-## Task
+## Step 1: Pre-checks
 
-You MUST create a new PR or update an existing PR for the current branch.
+**Input:** repository context above.
+**Output:** branch ready for PR (pushed, clean or user-acknowledged).
 
-## Pre-checks
+1. **Uncommitted changes**: If there are uncommitted changes, warn the user and ask if they want to commit first. If the user declines to commit, inform the user that uncommitted changes will not be included in the PR and **continue**.
+2. **Push status**: If the branch is not pushed or is behind remote, push it with `git push -u origin <branch>`. If `git push` fails, inform the user with the error message and **stop**.
 
-1. **Uncommitted changes**: If there are uncommitted changes, warn the user and ask if they want to commit first.
-2. **Push status**: If the branch is not pushed or behind remote, push it with `git push -u origin <branch>`.
+## Step 2: Create or Update PR
 
-## If NO existing PR: Create new PR
+**Input:** commit list from repository context, existing PR status.
+**Output:** created or updated PR URL.
 
-### Title
+### If NO existing PR: Create
+
+#### Title Rules
 
 - **English only, 40 chars max** (excluding prefix).
 - Use short verbs: Add, Fix, Update, Remove, Refactor.
 - **Ticket prefix**: If the branch name contains a ticket identifier (pattern: `letters-numbers`, e.g., `TASK-123`, `proj-42`), extract it, uppercase it, and prepend as `[TASK-123]` prefix.
 
-Examples:
-- Branch `TASK-123-add-feature` → `[TASK-123] Add feature management`
-- Branch `feature/JIRA-456-fix-bug` → `[JIRA-456] Fix auth bug`
-- Branch `proj-42-fix-layout` → `[PROJ-42] Fix layout issue`
-- Branch `add-new-feature` → `Update Claude Code config` (no prefix)
+| Branch | Title |
+|--------|-------|
+| `TASK-123-add-feature` | `[TASK-123] Add feature management` |
+| `feature/JIRA-456-fix-bug` | `[JIRA-456] Fix auth bug` |
+| `proj-42-fix-layout` | `[PROJ-42] Fix layout issue` |
+| `add-new-feature` | `Update Claude Code config` (no prefix) |
 
-### Command
+#### Body Rules
+
+- You MUST write the PR body in 한국어.
+- Analyze all commits in the branch to understand the full scope.
+- Include every commit hash in the body for traceability.
+
+#### Command
 
 ```bash
 gh pr create --title "[TASK-123] Description" --assignee @me --body "$(cat <<'EOF'
@@ -52,9 +67,19 @@ EOF
 )"
 ```
 
-## If PR already exists: Update PR
+If `gh pr create` fails, inform the user with the full error message and **stop**.
 
-You MUST preserve the existing title — update the body only.
+### If PR already exists: Update
+
+You MUST preserve the existing title — update the body only. When updating, preserve the intent of the original summary while incorporating new changes.
+
+#### Body Rules
+
+- You MUST write the PR body in 한국어.
+- Analyze all commits in the branch to understand the full scope.
+- Include every commit hash in the body for traceability.
+
+#### Command
 
 ```bash
 gh pr edit --body "$(cat <<'EOF'
@@ -69,9 +94,4 @@ EOF
 )"
 ```
 
-When updating, preserve the intent of the original summary while incorporating new changes.
-
-## Body Rules
-
-- **한국어로 작성**. Title은 영어, Body는 한국어.
-- Analyze all commits in the branch to understand the full scope. Include every commit hash in the body for traceability.
+If `gh pr edit` fails, inform the user with the full error message and **stop**.
