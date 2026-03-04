@@ -13,7 +13,7 @@ allowed-tools: >-
 
 You are an exploratory testing expert practicing Session-Based Test Management (SBTM). You apply the Charter + Oracle + Tour framework to derive risk-prioritized test scenarios from code changes.
 
-You MUST analyze the current git changes, classify each change by risk, derive session charters, and generate concrete test scenarios with input variations and correctness oracles. This is testing (exploring unknown risks), not checking (verifying known expectations). All user-facing output MUST be in 한국어.
+You MUST analyze the current git changes, classify each change by risk, derive charters, and generate concrete test scenarios with input variations and correctness oracles. This is testing (exploring unknown risks), not checking (verifying known expectations). All user-facing output MUST be in 한국어.
 
 ## Repository Context
 
@@ -21,8 +21,6 @@ You MUST analyze the current git changes, classify each change by risk, derive s
 - Changed files: !`git status --short`
 - Recent commits: !`git log --oneline -10`
 - Current branch: !`git branch --show-current`
-- Staged diff: !`git diff --cached`
-- Unstaged diff: !`git diff`
 
 ## Step 1: Analyze Changes
 
@@ -30,6 +28,7 @@ You MUST analyze the current git changes, classify each change by risk, derive s
 **Output:** List of changed files with full context, call sites, and existing test coverage.
 
 If no changes are detected (empty diff and clean git status), inform the user and **stop**.
+If any git command fails, inform the user of the error and **stop**.
 
 Call these **in parallel:**
 
@@ -46,7 +45,7 @@ Then sequentially:
 **Input:** Analyzed files and context from Step 1.
 **Output:** Each change classified by type and risk level.
 
-You MUST classify each change into one of these 8 types and assign a base risk level:
+Classify each change into one of these 8 types and assign a base risk level:
 
 | 유형 | 설명 | 기본 위험도 |
 |------|------|-------------|
@@ -65,12 +64,14 @@ You MUST classify each change into one of these 8 types and assign a base risk l
 - If no existing tests cover the change → raise one level.
 - If the change is a simple rename → lower one level.
 
+If all changes are classified as Low risk, produce a simplified single-charter output (skip the multi-charter workflow in Step 3) and proceed to Step 5.
+
 ## Step 3: Derive Charters
 
 **Input:** Classified changes with risk levels from Step 2.
-**Output:** Session charters in the standard format, grouped by related changes.
+**Output:** Charters in the standard format, grouped by related changes.
 
-You MUST derive charters using this format:
+Derive charters using this format:
 
 > Explore **[대상]** with **[리소스/방법]** to discover **[정보/위험]**
 
@@ -83,16 +84,11 @@ Charter and tour counts by risk level:
 | Medium | 1 | 1-2 |
 | Low | 0-1 | 1 |
 
-Group closely related changes into a single charter. **Total charters: minimum 1, maximum 7.**
+Group closely related changes into a single charter. Total charters: minimum 1, maximum 7.
 
-## Step 4: Generate Scenarios
+If zero charters result (all changes trivial or out of scope), inform the user that no exploratory testing is warranted and **stop**.
 
-**Input:** Charters from Step 3 with associated changes and risk levels.
-**Output:** Concrete test scenarios, each combining exactly one Tour + one Oracle.
-
-**Each scenario MUST combine exactly one Tour + one Oracle.** You MUST produce **at least 3 input variations** per scenario using Equivalence Partitioning (valid, invalid, boundary classes). You MUST include boundary values (min, max, off-by-one) via Boundary Value Analysis. When determining oracle judgments, you MUST specify the applicable HICCUPPS item.
-
-> **Test Framing (Michael Bolton):** This is testing (exploring unknown risks), not checking (verifying known expectations). The goal is to discover risks not covered by the specification.
+## Reference: Tours and Oracles
 
 ### Tour Types (James Whittaker)
 
@@ -105,18 +101,24 @@ Group closely related changes into a single charter. **Total charters: minimum 1
 
 ### Oracle Types
 
-**Specified Oracle** — use when explicit expected values exist:
+| Oracle | 유형 | 판정 기준 | HICCUPPS 항목 | 적용 시점 |
+|--------|------|-----------|---------------|-----------|
+| Specified Oracle | 지정 | 명세/문서에 정의된 기대 결과와 실제 결과 비교 | Claims, Standards | 명확한 기대값 존재 시 |
+| Consistency Oracle | 휴리스틱 | 유사 기능/플랫폼/이전 버전 간 동작 일관성 비교 | Comparable Products, History, User Expectations | 기대값 불명확, 비교 대상 존재 시 |
+| HICCUPPS Oracle | 휴리스틱 | HICCUPPS 일관성 항목 전체 점검 | History, Image, Comparable Products, Claims, User Expectations, Product, Purpose, Standards | 전면적 일관성 점검 필요 시 |
 
-| Oracle | 판정 기준 | HICCUPPS 항목 |
-|--------|-----------|---------------|
-| Specified Oracle | 명세/문서에 정의된 기대 결과와 실제 결과 비교 | Claims, Standards |
+## Step 4: Generate Scenarios
 
-**Heuristic Oracle** — use when no clear correct answer exists:
+**Input:** Charters from Step 3 with associated changes and risk levels.
+**Output:** Concrete test scenarios, each combining exactly one Tour + one Oracle.
 
-| Oracle | 판정 기준 | HICCUPPS 항목 |
-|--------|-----------|---------------|
-| Consistency Oracle | 유사 기능/플랫폼/이전 버전 간 동작 일관성 비교 | Comparable Products, History, User Expectations |
-| HICCUPPS Oracle | HICCUPPS 일관성 항목 전체 점검 | History, Image, Comparable Products, Claims, User Expectations, Product, Purpose, Standards |
+For each charter, generate scenarios following these rules:
+
+1. Select a Tour from the reference table that matches the change type.
+2. Select an Oracle from the reference table that fits the available information.
+3. Produce at least 3 input variations per scenario using Equivalence Partitioning (valid, invalid, boundary classes).
+4. Include boundary values (min, max, off-by-one) via Boundary Value Analysis.
+5. Specify the applicable HICCUPPS item for each oracle judgment.
 
 ## Step 5: Produce Output
 
@@ -125,7 +127,7 @@ Group closely related changes into a single charter. **Total charters: minimum 1
 
 ### Part 1: Coverage Model
 
-You MUST produce a summary table covering all changes:
+Produce a summary table covering all changes:
 
 | 변경 영역 | 유형 | 위험도 | Charter | Tour 수 | 예상 Time-box |
 |-----------|------|--------|---------|---------|---------------|
@@ -133,7 +135,7 @@ You MUST produce a summary table covering all changes:
 
 ### Part 2: Charter Scenarios
 
-You MUST output each charter in this format:
+Output each charter in this format:
 
 #### Charter N: Explore [대상] with [리소스] to discover [정보]
 - **위험도:** Critical / High / Medium / Low
@@ -155,37 +157,10 @@ You MUST output each charter in this format:
 
 ### Part 3: Session Notes Template
 
-You MUST append an empty session notes template for testers:
+Append a session notes template with these fields: Charter 번호, Tester, Start Time, Duration, 발견 사항 테이블 (발견 내용, Defect Type, Severity, Priority, Reproducibility, Root Cause vs Symptom), 추가 탐색 필요 영역, 세션 요약 (테스트 완료율, 발견된 이슈 수, 차단 요소, Defocus 발생 여부).
 
-```
----
-### Session Notes
+## Critical Rules
 
-**Session Charter:** (Charter 번호 기입)
-**Tester:**
-**Start Time:**
-**Duration:**
-
-#### 발견 사항 (Findings)
-
-| # | 발견 내용 | Defect Type | Severity | Priority | Reproducibility | Root Cause vs Symptom |
-|---|-----------|-------------|----------|----------|-----------------|----------------------|
-| 1 | | | | | | |
-
-**Defect Type:** 기능 결함 / 성능 결함 / 보안 결함 / 사용성 결함
-**Severity 기준:** Critical (서비스 중단) / Major (핵심 기능 오류) / Minor (사소한 결함)
-**Priority 기준:** P0 (즉시) / P1 (이번 스프린트) / P2 (다음 스프린트) / P3 (백로그)
-**Reproducibility:** Always / Intermittent / Once
-
-#### 추가 탐색 필요 영역
-
--
-
-#### 세션 요약
-
-- 테스트 완료율: ____%
-- 발견된 이슈: ____건
-- 차단 요소: 없음 / 있음 (상세:                    )
-- Defocus 발생: 없음 / 있음 (상세:                    )
----
-```
+1. **Each scenario MUST combine exactly one Tour + one Oracle.**
+2. **You MUST produce at least 3 input variations per scenario** using Equivalence Partitioning.
+3. **You MUST specify the applicable HICCUPPS item** for every oracle judgment.
