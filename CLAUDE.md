@@ -36,18 +36,23 @@ You are working in a Claude Code plugin repository (`jacehwang/harness`) contain
 harness/
 ├── .claude-plugin/          # Plugin manifest + marketplace catalog — DO NOT MODIFY
 ├── skills/                  # Each subdirectory = one skill
-│   ├── address-reviews/
+│   ├── address-findings/
+│   │   └── SKILL.md
+│   ├── code-review/
 │   │   └── SKILL.md
 │   ├── commit/
 │   │   └── SKILL.md
 │   ├── explore-test/
 │   │   └── SKILL.md
+│   ├── internalize/
+│   │   └── SKILL.md
 │   ├── plan-ticket/
 │   │   └── SKILL.md
-│   └── pr/
+│   ├── pr/
+│   │   └── SKILL.md
+│   └── prompt-doctor/
 │       └── SKILL.md
-├── agents/                  # Each .md file = one subagent
-│   └── prompt-doctor.md
+├── agents/                  # Each .md file = one subagent (currently empty)
 ├── CLAUDE.md                # This file
 └── README.md                # User-facing documentation (한국어)
 ```
@@ -216,7 +221,7 @@ Revision Protocol        — How to handle follow-up requests and iteration.
 - Include self-validation steps: "Before delivering, verify: [checklist]."
 - For complex workflows, define severity or routing tiers that control how much work to do based on input characteristics.
 
-**Canonical example**: `agents/prompt-doctor.md` — refer to this file for a complete subagent system prompt.
+**Canonical example**: `skills/prompt-doctor/SKILL.md` — refer to this file for a complete implementation of a knowledge-intensive skill prompt.
 
 ## Quality Checklist
 
