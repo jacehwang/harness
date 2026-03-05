@@ -83,7 +83,7 @@ Scan for agent prompt files in the repository:
 3. Determine the target file and insertion point:
    - If multiple prompt files exist, prefer the one closest to the relevant code area (e.g., a subdirectory CLAUDE.md over the root one). If scope is project-wide, use the root prompt file.
    - If the target file is `AGENTS.md` or `codex.md`, mark as **Codex target** for Step 5.
-   - **Insertion point:** Place the directive in the section most semantically related to the intervention topic. If no suitable section exists, append to the end of the file. Follow Token Proximity — co-locate with related existing directives. Place critical directives in the top or bottom 20% of the file for Positional Attention.
+   - **Insertion point:** Place the directive in the section most semantically related to the intervention topic. If no suitable section exists, append to the end of the file. Co-locate with related existing directives. Place critical directives in the top or bottom 20% of the file.
 
 ## Step 5: Draft
 
@@ -93,12 +93,15 @@ Scan for agent prompt files in the repository:
 1. Write the directive following the classification strategy:
    - **Discovery → declarative:** State the rule as a fact. Use imperative second-person ("You MUST...").
    - **Preventable → exploration:** Instruct where to look and what to verify. Reference specific paths or patterns.
-   - **Codex adaptation:** If the target is Codex, call `Read` on `references/codex-prompting-guide.md` and apply its directive-writing strategies instead of the default imperative style.
+   - **Codex adaptation:** If the target is Codex, apply these rules instead of the default imperative style:
+     - Write outcome-oriented declarative rules — state the desired result, not the procedure.
+     - Do NOT repeat Codex built-in behaviors (pattern search, correctness prioritization, parallel reads).
+     - Avoid step-by-step procedures, file-by-file exploration instructions, and chain-of-thought prompts — these conflict with Codex internals.
 
 2. Self-check the draft against prompt-doctor principles:
-   - **Lens A (Positional Attention):** Is the directive placed where it will receive attention?
-   - **Lens B (Instruction Framing):** Is the directive positive-framed with testable criteria?
-   - **Lens C (Speech Act Typing):** Is the directive an imperative command, not a suggestion?
+   - Is the directive placed in the top or bottom 20% of the file, or co-located with related directives?
+   - Is the directive positive-framed with testable criteria?
+   - Is the directive an imperative command, not a suggestion?
 
 3. Present the draft to the user:
 
@@ -122,7 +125,10 @@ Scan for agent prompt files in the repository:
 **Input:** Confirmed directive from Step 5.
 **Output:** Applied changes + summary.
 
-1. Apply the directive using `Edit` (for Partial coverage or existing section insertion) or `Edit` with appended content (for New coverage at file end). Preserve the target file's existing formatting, indentation, and style.
+1. Apply the directive:
+   - **Partial** coverage: Call `Edit` to modify the existing directive text at its current location.
+   - **New** coverage: Call `Edit` to insert the new directive at the identified insertion point from Step 4.
+   Preserve the target file's existing formatting, indentation, and style. If `Edit` fails, inform the user with the error details and **stop**.
 
 2. Display a summary:
 

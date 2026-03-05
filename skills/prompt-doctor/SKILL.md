@@ -62,7 +62,7 @@ Diagnose first, transform second — never rewrite without understanding. Match 
 **Input:** Draft prompt from Step 1.
 **Output:** Confirmed intent, target model, and scope.
 
-If intent is unclear, call `AskUserQuestion` with 1–4 targeted questions and proceed. Unknown target LLM → default "Unknown," proceed without blocking.
+If intent is unclear, call `AskUserQuestion` with 1–4 targeted questions from the [Clarification Questions](#clarification-questions) bank and proceed. Unknown target LLM → default "Unknown," proceed without blocking.
 
 ### Step 3: Diagnose
 
@@ -186,8 +186,6 @@ Record specific instances with location references (line numbers, section names,
 | Context overload | Injected context (examples, documents, references) exceeds instructional content by > 3× without relevance filtering |
 | Verbatim repetition as emphasis | Same instruction repeated verbatim in multiple locations instead of structural positioning or formatting emphasis |
 
-Assess severity per the Severity Routing table.
-
 ## Reference
 
 ### 8-Field Reference
@@ -286,13 +284,20 @@ Structural decisions determine how much attention weight each instruction receiv
 
 Instruction content determines behavioral clarity — whether the model can unambiguously identify the desired action.
 
+#### MUST
+
+| Principle | Instruction |
+|-----------|-------------|
+| Explicit Acceptance Criteria | Convert vague expectations to testable pass/fail criteria. |
+| RFC 2119 | Replace hedging ("try to", "ideally") with MUST/SHOULD/MAY. |
+| Parallelism | Enforce parallel grammatical structure across lists. |
+| Instruction Framing | Convert negative directives to positive form. See **Instruction Framing detail** below. |
+| Numeric Precision | LLMs cannot reliably count their own output tokens. When the prompt specifies exact counts, bounds, or ratios: (1) Structural emphasis — make the numeric value visually prominent (bold, dedicated line); embed outside running prose. (2) Output format scaffolding — enforce counting via structure rather than model inference ("return a numbered list 1–5" instead of "return 5 items"; "exactly 3 rows in a table" instead of "about 3 paragraphs"). (3) Verification anchor — for critical numeric constraints, add self-check: "After generating, verify the count matches N." Exception: approximate expectations ("약 5개 정도") need only range clarification ("3–7개"), not structural enforcement. |
+
+#### SHOULD / MAY
+
 | Pri | Principle | Instruction |
 |-----|-----------|-------------|
-| MUST | Explicit Acceptance Criteria | Convert vague expectations to testable pass/fail criteria. |
-| MUST | RFC 2119 | Replace hedging ("try to", "ideally") with MUST/SHOULD/MAY. |
-| MUST | Parallelism | Enforce parallel grammatical structure across lists. |
-| MUST | Instruction Framing | Convert negative directives to positive form. See **Instruction Framing detail** below. |
-| MUST | Numeric Precision | LLMs cannot reliably count their own output tokens. When the prompt specifies exact counts, bounds, or ratios: (1) Structural emphasis — make the numeric value visually prominent (bold, dedicated line); embed outside running prose. (2) Output format scaffolding — enforce counting via structure rather than model inference ("return a numbered list 1–5" instead of "return 5 items"; "exactly 3 rows in a table" instead of "about 3 paragraphs"). (3) Verification anchor — for critical numeric constraints, add self-check: "After generating, verify the count matches N." Exception: approximate expectations ("약 5개 정도") need only range clarification ("3–7개"), not structural enforcement. |
 | MAY | Edge Case Coverage | Add handlers ("If [condition], then [behavior]") only for Agentic, Pipeline, or API prompts. |
 | SHOULD | Worked Example | Include only when format is non-obvious or has ≥ 3 structural layers. |
 | SHOULD | Bloom's Alignment | Align verbs with target Bloom's level. |

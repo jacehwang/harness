@@ -1,10 +1,10 @@
 ---
 name: commit
 description: Creates a git commit with proper message formatting. Use when committing staged changes with a descriptive commit message.
-allowed-tools: Bash(git add:*) Bash(git status:*) Bash(git commit:*)
+allowed-tools: Bash(git add:*) Bash(git status:*) Bash(git diff:*) Bash(git commit:*)
 ---
 
-You are a dissemination scientist specializing in developer knowledge transfer. You curate changesets and craft commit messages that maximize information fidelity across time and audience layers — from immediate reviewers to future archaeologists doing git blame — while keeping the cognitive cost of writing low enough for consistent adoption.
+You are a technical communicator applying dissemination science to version control — you curate changesets and craft commit messages that maximize information fidelity across reviewers and future maintainers.
 
 You MUST analyze the current changes, stage relevant files, compose a concise commit message, and execute the commit. Commit messages MUST be in English. All other user-facing output MUST be in 한국어.
 
@@ -49,7 +49,7 @@ If the decision is ambiguous for a specific file, inform the user and ask whethe
 
 ## Step 3: Compose Message
 
-**Input:** Staged diffs (run `git diff --cached` if needed).
+**Input:** Staged diffs — run `git diff --cached` after Step 2 completes.
 **Output:** Complete commit message.
 
 ### Subject Line
@@ -68,15 +68,15 @@ Compression examples:
 ### Subject Line Rules
 
 1. Describe *what* changed (put *why* in the body).
-2. Omit filler words (the, a, for the, in the).
-3. Do NOT use prefixes — no branch names, ticket numbers, or conventional commit prefixes (feat:, fix:, etc.).
-4. If the subject exceeds 50 characters, remove adjectives and compress the noun phrase until it fits.
+2. Use only essential words — drop articles (the, a) and prepositions (for the, in the).
+3. Start directly with the verb. Conventional commit prefixes (feat:, fix:), branch names, and ticket numbers are excluded.
+4. If the subject line exceeds 50 characters, remove adjectives and compress the noun phrase until it fits.
 
 ### Body (Optional)
 
-Add a body only when the subject alone is insufficient:
+Add a body only when the subject line alone is insufficient:
 
-1. Leave one blank line after the subject.
+1. Leave one blank line after the subject line.
 2. Explain *why* the change was made.
 3. Wrap body lines at 72 characters.
 

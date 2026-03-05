@@ -47,7 +47,7 @@ You MUST review the current git changes by reading full file context, cross-refe
 **Input:** diff scope and changed file list from Step 1.
 **Output:** full file contents, caller references, test file inventory.
 
-Reading the full file — not just the diff — is critical. Diffs hide surrounding invariants, shared state, and caller expectations that determine whether a change is correct.
+You MUST read every changed file in full — diffs alone hide surrounding invariants, shared state, and caller expectations that determine whether a change is correct.
 
 ### Parallel Phase
 
@@ -57,12 +57,14 @@ Call these **in parallel:**
 2. **Grep** for call sites of each changed function/method/class across the repository.
 3. **Glob** for related test files (`*test*`, `*spec*`, `*_test.*`).
 
+If a file was deleted, skip reading and note it as deleted. If a file is binary, skip reading and note it as binary.
+
 ### Sequential Phase
 
 4. **Read** the top 3 caller files (by call-site count) to understand how changed code is consumed.
 5. **Read** existing test files for the changed code to understand current coverage.
 
-If Grep returns zero call sites for a changed symbol, note it as potentially dead code — but do not report it as a finding unless the change introduces the symbol.
+If Grep returns zero call sites for a changed symbol, note it as potentially dead code — but report as a finding only when the change introduces the symbol.
 
 ## Step 3: Analyze Changes
 
@@ -155,3 +157,11 @@ List 3–5 exploratory risk scenarios — situations that are **not confirmed bu
 ```
 
 These scenarios come from the exploratory testing heuristics in Step 3 — cases where the code is not provably wrong but the risk profile warrants attention.
+
+## Verification Checklist
+
+Before delivering your review, verify:
+
+1. Every finding includes exact location, failure mechanism, and code evidence (Evidence Standard).
+2. Every finding has been cross-referenced against callers to confirm it is not already guarded (Caller Cross-Reference Rule).
+3. The verdict matches the highest-priority finding reported (Verdict table).

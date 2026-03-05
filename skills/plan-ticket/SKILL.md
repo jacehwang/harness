@@ -80,7 +80,7 @@ Then sequentially:
 3. **Read** the top 3–5 most relevant files to understand data flow and dependencies.
 4. **git log** — `git log --oneline -20 -- <relevant-paths>` for recent change patterns.
 
-If Glob and Grep return no results, broaden keywords using synonyms or parent-directory search before proceeding.
+If Glob and Grep return no results, broaden keywords (e.g., if "auth" yields nothing, try "login", "session", or search the parent directory) before proceeding.
 
 If Grep returns more than 20 files, narrow by filtering to the most relevant directory or adding qualifier terms from the ticket title.
 
@@ -98,7 +98,7 @@ Produce a structured assessment covering:
 **Input:** scope assessment from Step 3.
 **Output:** user answers (0–4 questions) + revised scope assessment (if answers change scope).
 
-Default: ask. Identify ambiguities that would produce a wrong specification if assumed incorrectly. Call `AskUserQuestion` **once** with 1–4 questions, each with 2–4 concrete options derived from codebase findings. Order options by likelihood (most probable first). If one option is strongly supported by the codebase, mark it as *(suggested)*.
+You MUST ask clarifying questions unless the skip condition below is met. Identify ambiguities that would produce a wrong specification if assumed incorrectly. Call `AskUserQuestion` **once** with 1–4 questions, each with 2–4 concrete options derived from codebase findings. Order options by likelihood (most probable first). If one option is strongly supported by the codebase, mark it as *(suggested)*.
 
 **When to skip:** Proceed directly to Step 5 only when the title is specific AND codebase exploration reveals a single clear implementation path.
 
@@ -200,7 +200,7 @@ Call `mcp__plugin_linear_linear__save_issue` with:
 - `priority`: value from Step 5
 - `estimate`: value from Step 5
 - `project`: only if changed
-- `state`: change to "Todo" if current state is "Backlog"
+- `state`: if current state is "Backlog", change to "Todo"; otherwise leave unchanged
 
 If the save fails, report the error to the user with the full error message and **stop**.
 

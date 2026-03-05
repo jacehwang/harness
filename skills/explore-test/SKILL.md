@@ -45,7 +45,9 @@ Then sequentially:
 **Input:** Analyzed files and context from Step 1.
 **Output:** Each change classified by type and risk level.
 
-Classify each change into one of these 8 types and assign a base risk level:
+Classify each change into one of these types and assign a base risk level:
+
+### Critical / High Risk
 
 | 유형 | 설명 | 기본 위험도 |
 |------|------|-------------|
@@ -53,6 +55,11 @@ Classify each change into one of these 8 types and assign a base risk level:
 | 입력 검증 | 사용자/외부 입력 처리 | Critical |
 | API 계약 | 인터페이스, 스키마, 엔드포인트 변경 | High |
 | 상태 관리 | 상태 전이, 캐시, 세션 처리 | High |
+
+### Medium / Low Risk
+
+| 유형 | 설명 | 기본 위험도 |
+|------|------|-------------|
 | 데이터 변환 | 직렬화, 파싱, 매핑 | Medium |
 | 에러 처리 | 예외, 폴백, 재시도 로직 | Medium |
 | 설정/환경 | 환경 변수, 설정 파일, 의존성 | Low |
@@ -64,7 +71,7 @@ Classify each change into one of these 8 types and assign a base risk level:
 - If no existing tests cover the change → raise one level.
 - If the change is a simple rename → lower one level.
 
-If all changes are classified as Low risk, produce a simplified single-charter output (skip the multi-charter workflow in Step 3) and proceed to Step 5.
+**Low-risk shortcut:** If all changes are classified as Low risk, produce a single charter with one Guidebook Tour scenario covering the primary change, format the output per Step 5, and **skip Steps 3 and 4**.
 
 ## Step 3: Derive Charters
 
@@ -79,16 +86,27 @@ Charter and tour counts by risk level:
 
 | 위험도 | Charter 수 | Charter당 Tour 수 |
 |--------|------------|-------------------|
-| Critical | 2-3 | 3-4 |
-| High | 1-2 | 2-3 |
-| Medium | 1 | 1-2 |
-| Low | 0-1 | 1 |
+| Critical | 2–3 | 3–4 |
+| High | 1–2 | 2–3 |
+| Medium | 1 | 1–2 |
+| Low | 0–1 | 1 |
 
 Group closely related changes into a single charter. Total charters: minimum 1, maximum 7.
 
 If zero charters result (all changes trivial or out of scope), inform the user that no exploratory testing is warranted and **stop**.
 
-## Reference: Tours and Oracles
+## Step 4: Generate Scenarios
+
+**Input:** Charters from Step 3 with associated changes and risk levels.
+**Output:** Concrete test scenarios, each combining exactly one Tour + one Oracle.
+
+For each charter, generate scenarios following these rules:
+
+1. Select a Tour from the tour table below that matches the change type.
+2. Select an Oracle from the oracle table below that fits the available information.
+3. Produce at least 3 input variations per scenario using Equivalence Partitioning (valid, invalid, boundary classes).
+4. Include boundary values (min, max, off-by-one) via Boundary Value Analysis.
+5. Specify the applicable HICCUPPS item for each oracle judgment.
 
 ### Tour Types (James Whittaker)
 
@@ -106,19 +124,6 @@ If zero charters result (all changes trivial or out of scope), inform the user t
 | Specified Oracle | 지정 | 명세/문서에 정의된 기대 결과와 실제 결과 비교 | Claims, Standards | 명확한 기대값 존재 시 |
 | Consistency Oracle | 휴리스틱 | 유사 기능/플랫폼/이전 버전 간 동작 일관성 비교 | Comparable Products, History, User Expectations | 기대값 불명확, 비교 대상 존재 시 |
 | HICCUPPS Oracle | 휴리스틱 | HICCUPPS 일관성 항목 전체 점검 | History, Image, Comparable Products, Claims, User Expectations, Product, Purpose, Standards | 전면적 일관성 점검 필요 시 |
-
-## Step 4: Generate Scenarios
-
-**Input:** Charters from Step 3 with associated changes and risk levels.
-**Output:** Concrete test scenarios, each combining exactly one Tour + one Oracle.
-
-For each charter, generate scenarios following these rules:
-
-1. Select a Tour from the reference table that matches the change type.
-2. Select an Oracle from the reference table that fits the available information.
-3. Produce at least 3 input variations per scenario using Equivalence Partitioning (valid, invalid, boundary classes).
-4. Include boundary values (min, max, off-by-one) via Boundary Value Analysis.
-5. Specify the applicable HICCUPPS item for each oracle judgment.
 
 ## Step 5: Produce Output
 
@@ -157,7 +162,35 @@ Output each charter in this format:
 
 ### Part 3: Session Notes Template
 
-Append a session notes template with these fields: Charter 번호, Tester, Start Time, Duration, 발견 사항 테이블 (발견 내용, Defect Type, Severity, Priority, Reproducibility, Root Cause vs Symptom), 추가 탐색 필요 영역, 세션 요약 (테스트 완료율, 발견된 이슈 수, 차단 요소, Defocus 발생 여부).
+Append this session notes template:
+
+```
+## 세션 노트
+
+- **Charter 번호:**
+- **Tester:**
+- **Start Time:**
+- **Duration:**
+
+### 발견 사항
+
+| # | 발견 내용 | Defect Type | Severity | Priority | Reproducibility | Root Cause vs Symptom |
+|---|----------|-------------|----------|----------|-----------------|----------------------|
+| 1 |          |             |          |          |                 |                      |
+
+### 추가 탐색 필요 영역
+
+-
+
+### 세션 요약
+
+| 항목 | 값 |
+|------|---|
+| 테스트 완료율 |  |
+| 발견된 이슈 수 |  |
+| 차단 요소 |  |
+| Defocus 발생 여부 |  |
+```
 
 ## Critical Rules
 

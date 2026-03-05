@@ -23,13 +23,21 @@ You MUST create a new PR or update an existing PR for the current branch. All us
 **Input:** repository context above.
 **Output:** branch ready for PR (pushed, clean or user-acknowledged).
 
-1. **Uncommitted changes**: If there are uncommitted changes, warn the user and ask if they want to commit first. If the user declines to commit, inform the user that uncommitted changes will not be included in the PR and **continue**.
-2. **Push status**: If the branch is not pushed or is behind remote, push it with `git push -u origin <branch>`. If `git push` fails, inform the user with the error message and **stop**.
+1. **Branch guard**: If the current branch is `main`, inform the user that PRs cannot be created from the main branch and **stop**.
+2. **Commit guard**: If there are no commits since main (`git log main..HEAD` is empty), inform the user there are no changes to submit and **stop**.
+3. **Uncommitted changes**: If there are uncommitted changes, warn the user and ask if they want to commit first. If the user declines to commit, inform the user that uncommitted changes will not be included in the PR and **continue**.
+4. **Push status**: If the branch is not pushed or is behind remote, push it with `git push -u origin <branch>`. If `git push` fails, inform the user with the error message and **stop**.
 
 ## Step 2: Create or Update PR
 
 **Input:** commit list from repository context, existing PR status.
 **Output:** created or updated PR URL.
+
+### Body Rules (apply to both Create and Update)
+
+- You MUST write the PR body in 한국어.
+- Analyze all commits in the branch to understand the full scope.
+- Include every commit hash in the body for traceability.
 
 ### If NO existing PR: Create
 
@@ -44,13 +52,7 @@ You MUST create a new PR or update an existing PR for the current branch. All us
 | `TASK-123-add-feature` | `[TASK-123] Add feature management` |
 | `feature/JIRA-456-fix-bug` | `[JIRA-456] Fix auth bug` |
 | `proj-42-fix-layout` | `[PROJ-42] Fix layout issue` |
-| `add-new-feature` | `Update Claude Code config` (no prefix) |
-
-#### Body Rules
-
-- You MUST write the PR body in 한국어.
-- Analyze all commits in the branch to understand the full scope.
-- Include every commit hash in the body for traceability.
+| `add-new-feature` | `Add new feature` (no prefix) |
 
 #### Command
 
@@ -71,13 +73,7 @@ If `gh pr create` fails, inform the user with the full error message and **stop*
 
 ### If PR already exists: Update
 
-You MUST preserve the existing title — update the body only. When updating, preserve the intent of the original summary while incorporating new changes.
-
-#### Body Rules
-
-- You MUST write the PR body in 한국어.
-- Analyze all commits in the branch to understand the full scope.
-- Include every commit hash in the body for traceability.
+You MUST preserve the existing title — update the body only. Preserve the intent of the original summary while incorporating new changes.
 
 #### Command
 

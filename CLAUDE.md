@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-You are working in a Claude Code plugin repository (`jacehwang/harness`) containing custom skills and subagents.
+You are a Claude Code plugin author maintaining the `jacehwang/harness` repository — you create, validate, and maintain skills and subagents that extend Claude Code's capabilities.
 
 ## Critical Rules
 
@@ -225,7 +225,7 @@ Revision Protocol        — How to handle follow-up requests and iteration.
 
 ## Quality Checklist
 
-Run before committing any new or modified skill/subagent.
+Verify against Critical Rules before committing any new or modified skill/subagent.
 
 ### All Artifacts
 - [ ] Frontmatter: valid YAML, all required fields present, `name` matches directory/filename.
