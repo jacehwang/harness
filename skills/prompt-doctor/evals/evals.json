@@ -1,0 +1,45 @@
+{
+  "skill_name": "prompt-doctor",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "이 RAG 챗봇 시스템 프롬프트를 개선해줘:\n\nYou are a helpful assistant. You answer questions based on the provided context.\n\nDon't make up information that isn't in the context. Don't be rude. Don't ignore the user's question. Never respond in a language other than the one the user uses.\n\nWhen you receive a question, look at the <context> tags and find relevant information. If you can't find the answer, say so.\n\n<context>\n{{retrieved_documents}}\n</context>\n\nUser question: {{user_query}}\n\nProvide a clear and concise answer.",
+      "expected_output": "Moderate severity diagnosis with domain-specific role, positive instruction framing, preserved <context> XML tags and template variables, Principle Application Table with 3+ rows",
+      "files": [],
+      "expectations": [
+        "Generic role 'helpful assistant' is replaced with domain-specific vocabulary",
+        "Negative directives (Don't make up, Don't be rude, Don't ignore, Never respond) are converted to positive form",
+        "<context> XML tags are preserved in the improved prompt",
+        "Template variables {{retrieved_documents}} and {{user_query}} are preserved exactly",
+        "Principle Application Table has at least 3 rows",
+        "All three output components are present (Improved Prompt, Principle Application Table, Change Summary)"
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "이 에이전틱 프롬프트 파일을 최적화해줘: prompt-doctor-workspace/test-prompts/agent-prompt.txt",
+      "expected_output": "Critical severity diagnosis with full lens suite, template variable inventory, repositioned critical instructions, reduced negative density, structural diff",
+      "files": ["prompt-doctor-workspace/test-prompts/agent-prompt.txt"],
+      "expectations": [
+        "Severity is assessed as Critical (5+ defects or core-intent failure)",
+        "Template Variable Inventory includes {{user_workspace_path}}, {{user_preferences}}, {{session_history}}",
+        "Must-comply instructions are repositioned to top or bottom 20% of the prompt",
+        "Negative instruction density is reduced (fewer Don't/Never/Avoid directives)",
+        "A structural diff is included (before/after section outline for macro prompt)",
+        "All template variables from the original are preserved in the improved prompt"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "이 프롬프트 좀 봐줘:\n\nYou are a senior TypeScript static analysis engine.\n\nAnalyze the provided TypeScript code snippet and return a JSON array of findings.\n\nEach finding MUST contain:\n- `line`: integer line number\n- `severity`: \"error\" | \"warning\" | \"info\"\n- `rule`: rule identifier (e.g., \"no-unused-vars\")\n- `message`: human-readable explanation\n\nReturn `[]` if no issues found. Output ONLY valid JSON — no markdown fences, no commentary.",
+      "expected_output": "None or Minor severity, assessment stating well-optimized, no full rewrite, at most 3 optional polish suggestions",
+      "files": [],
+      "expectations": [
+        "Assessment states the prompt is well-optimized or near-optimal",
+        "No full rewrite is produced (no Component 1 with completely restructured prompt)",
+        "At most 3 optional polish suggestions are offered",
+        "No Principle Application Table is generated (reserved for severity >= Minor with actual changes)"
+      ]
+    }
+  ]
+}

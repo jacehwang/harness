@@ -1,11 +1,16 @@
 ---
 name: prompt-doctor
 description: >-
-  Transforms draft prompts into optimized LLM instructions using an 8-field
-  academic framework (cognitive psychology, information design, requirements
-  engineering, instructional design, technical communication, rhetoric,
-  pragmatics, behavioral science). Use when the user wants to improve,
-  restructure, or optimize any prompt with traceable rationale.
+  Diagnoses and rewrites LLM prompts — system prompts, agent instructions,
+  RAG templates, structured-output prompts, role/persona definitions, and any
+  prompt type — applying 8 academic frameworks for precision and compliance.
+  Use when the user wants to improve, fix, optimize, review, restructure,
+  harden, port, or debug any prompt; common triggers include prompt injection
+  defense, model ignoring instructions, hedging language cleanup,
+  negative-to-positive directive rewriting, cross-model porting (e.g. GPT to
+  Claude), template variable preservation, attention positioning fixes, output
+  format enforcement, reasoning-model prompt adaptation, and persona
+  strengthening.
 allowed-tools: Read Write Edit Glob Grep AskUserQuestion
 ---
 
@@ -26,7 +31,7 @@ Diagnose first, transform second — never rewrite without understanding. Match 
 
 5. **Intent & voice preservation.** Preserve the user's goal, audience, tone, and style. Recognize deliberately unconventional patterns (creative constraints, artistic style) — preserve and note rather than "fix." `AskUserQuestion` if intent is ambiguous.
 6. **Format preservation.** Preserve delimiters, list style, heading levels, indentation. Format changes require diagnosed defects as justification.
-7. **Template integrity.** Preserve every variable, placeholder, and dynamic syntax token exactly. Token count before and after MUST match exactly. Template Inventory is the verification source of truth.
+7. **Template integrity.** Preserve every variable, placeholder, and dynamic syntax token exactly. Token count before and after MUST match unless a token itself is a diagnosed defect (e.g., unused variable, broken syntax). Any token change MUST appear in the Change Summary with rationale. Template Inventory is the verification source of truth.
 
 ### Quality
 
@@ -425,7 +430,10 @@ On revision requests:
 3. **Output** — Delta (before/after) if ≤ 3 changes; full output otherwise.
 4. **Pushback** — If revision violates a Rule, explain the trade-off and propose alternative.
 
-**Severity disputes:** Acknowledge the user's assessment, cite specific defects that drove your rating, adjust only if their reasoning changes the defect analysis.
+**Severity disputes — 3-step resolution:**
+1. **Acknowledge** the user's assessment without dismissing it.
+2. **Cite evidence** — list the specific defects and their impact that drove your rating.
+3. **Conditional adjust** — if the user's reasoning invalidates or reweights a defect, adjust severity and re-route accordingly. If not, explain why the original rating holds and offer to proceed at the user's preferred level with caveats.
 
 **Additional context (not a revision):** Integrate into diagnosis, re-evaluate severity, apply changes only where new context creates or resolves defects, deliver as delta.
 
@@ -445,7 +453,7 @@ On revision requests:
 **Before delivering, verify:**
 1. **Diagnose first:** Classification, Template Inventory, and Defect Scan completed before any transformation.
 2. **Severity routing:** Defect count and profile match one severity level; transform and validate scopes match that level.
-3. **Proportionality:** Length change justified by diagnosed defects. SHOULD additions are first to cut if over budget.
+3. **Proportionality:** Length change justified by diagnosed defects. SHOULD additions are first to cut if over budget. **Micro-prompts (≤ 3 lines):** even at Moderate+, limit to targeted fixes — keep the prompt concise unless the user explicitly requests elaboration.
 4. **P0 checks passed:** Intent, template integrity, no regressions (checks 1–3).
 5. **Output format:** Severity None = Assessment only, STOP. Severity ≥ Minor = exactly Components 1–3.
 6. **Traceability:** Every change cites one named principle from the 8-Field Reference.
