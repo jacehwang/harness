@@ -31,7 +31,7 @@ Diagnose first, transform second — never rewrite without understanding. Match 
 ### Quality
 
 8. **Instruction Compliance.** Every instruction MUST pass two tests — positional attention weight (Lens A) and behavioral clarity (Lens B). Both compound: a vague prohibition buried mid-prompt is doubly likely to be ignored. Additions MUST address diagnosed defects only. Prefer deleting noise over adding safeguards.
-9. **Full traceability.** Every change cites exactly one named principle from the 8-Field Reference.
+9. **Full traceability.** Every change cites exactly one named principle from the 8-Field Reference in the Principle Application Table and Change Summary.
 10. **Capability grounding.** Add capability-dependent instructions only when confirmed by user or evident in prompt.
 11. **Language matching.** Output the improved prompt in the input language. All user-facing communication MUST be in 한국어 by default; override to match the user's language when detectable.
 
@@ -135,7 +135,7 @@ Ask only what cannot be inferred. Call `AskUserQuestion` once with 1–4 questio
 | **Pattern** | zero-shot / few-shot / chain-of-thought / role-play / template / agentic / multi-step pipeline / structured-output / RAG / multimodal | Lens priority order |
 | **Core intent** | One sentence | Validation: intent check |
 | **Bloom's level** | remember / understand / apply / analyze / evaluate / create | Lens B: Bloom's Alignment |
-| **Scale** | micro (< 10 lines) / standard (10–50) / macro (> 50) | Annotation density, chunking strategy |
+| **Scale** | micro (< 10 lines) / standard (10–50) / macro (> 50) | Table detail level, chunking strategy |
 
 If core intent cannot be determined after classification, call `AskUserQuestion` to clarify and **stop**.
 
@@ -192,7 +192,7 @@ Assess severity per the Severity Routing table.
 
 ### 8-Field Reference
 
-> Internal knowledge base. Cite through inline annotations only.
+> Internal knowledge base. Cite through the Principle Application Table only.
 
 **Tags:** CogPsy · InfoDes · ReqEng · InsDes · TechCom · Rhetoric · Pragma · BehSci
 
@@ -359,7 +359,7 @@ Run checks per Severity Routing scope. If any check fails, revise and re-check (
 
 | # | Check | Pass Criterion |
 |---|-------|----------------|
-| 7 | Traceability | Every annotation maps to one named principle. No fabricated principles. |
+| 7 | Traceability | Every table row maps to one named principle. No fabricated principles. |
 | 8 | Model fit | No unsupported syntax for target LLM. |
 | 9 | Security | System/agent prompts have hierarchy + boundaries. |
 | 10 | Preservation | Voice, tone, format match original per Rules 5–6. |
@@ -379,52 +379,31 @@ Deliver Assessment only. **STOP.**
 
 ### When Severity ≥ Minor
 
-Deliver exactly four components. For **Minor severity on micro-scale prompts**, Component 3 (table) may be inlined into Component 4 (summary) to reduce overhead.
+Deliver exactly three components. For **Minor severity on micro-scale prompts**, Component 2 (table) may be inlined into Component 3 (summary) to reduce overhead.
 
-#### Annotation Density
+#### Traceability Detail Level
 
-One annotation per logical instruction. Co-located principles share a single slot (max two per annotation).
+One table row per changed instruction. Co-located principles share a single row (max two per row).
 
-| Scale | Style | Table | Summary |
-|-------|-------|-------|---------|
-| Micro (< 10 lines) or Minor severity | Superscript `¹²³` | Compact | 2–3 bullets |
-| Standard (10–50 lines) | Bracket `[Field: Principle]` | Full | 3–7 bullets |
-| Macro (> 50 lines) | Bracket `[Field: Principle]` | Full with section grouping | 5–7 bullets + structural diff |
+| Scale | Table | Summary |
+|-------|-------|---------|
+| Micro (< 10 lines) or Minor severity | Compact | 2–3 bullets |
+| Standard (10–50 lines) | Full | 3–7 bullets |
+| Macro (> 50 lines) | Full with section grouping | 5–7 bullets + structural diff |
 
-#### Component 1: Improved Prompt (Annotated)
+#### Component 1: Improved Prompt
 
-Fenced code block with inline annotations.
+The transformed prompt in a fenced code block — ready to use.
 
-**Standard:**
-```
-You are a senior marketing strategist specializing in B2B SaaS. [CogPsy: Schema Activation][Rhetoric: Ethos]
-
-## Constraints [InfoDes: Labeling]
-
-**CRITICAL — Support all superlatives with cited data.** [CogPsy: Von Restorff][BehSci: Loss Aversion]
-
-You MUST include at least one data point per claim. [ReqEng: RFC 2119]
-```
-
-**Micro:**
-```
-You are a senior marketing strategist specializing in B2B SaaS.¹²
-You MUST include at least one data point per claim.³
-```
-
-#### Component 2: Clean Prompt
-
-Same improved prompt without annotations — ready to use.
-
-#### Component 3: Principle Application Table
+#### Component 2: Principle Application Table
 
 | # | Principle | Field | Applied At | Rationale |
 |---|-----------|-------|------------|-----------|
 | 1 | Schema Activation | CogPsy | Opening line | Domain framing primes relevant knowledge |
 
-One row per annotation. Sequential numbering.
+One row per change. Sequential numbering.
 
-#### Component 4: Change Summary
+#### Component 3: Change Summary
 
 Bullets by descending impact:
 
@@ -437,7 +416,7 @@ For macro prompts, append structural diff (before → after section outline).
 On revision requests:
 
 1. **Scope** — Identify targeted components. Re-diagnose only if revision changes core intent or adds content.
-2. **Re-validate** — Affected checks only. Preserve prior annotations for unchanged sections.
+2. **Re-validate** — Affected checks only. Preserve prior table rows for unchanged sections.
 3. **Output** — Delta (before/after) if ≤ 3 changes; full output otherwise.
 4. **Pushback** — If revision violates a Rule, explain the trade-off and propose alternative.
 
@@ -463,5 +442,5 @@ On revision requests:
 2. **Severity routing:** Defect count and profile match one severity level; transform and validate scopes match that level.
 3. **Proportionality:** Length change justified by diagnosed defects. SHOULD additions are first to cut if over budget.
 4. **P0 checks passed:** Intent, template integrity, no regressions (checks 1–3).
-5. **Output format:** Severity None = Assessment only, STOP. Severity ≥ Minor = exactly Components 1–4.
+5. **Output format:** Severity None = Assessment only, STOP. Severity ≥ Minor = exactly Components 1–3.
 6. **Traceability:** Every change cites one named principle from the 8-Field Reference.
