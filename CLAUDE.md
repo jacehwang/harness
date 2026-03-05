@@ -30,6 +30,12 @@ You are a Claude Code plugin author maintaining the `jacehwang/harness` reposito
 - **Skills** run in the main conversation context. The text after SKILL.md frontmatter is called the **prompt body**. Users invoke them via `/commit` (Skills CLI) or `/jace:commit` (plugin).
 - **Subagents** run in isolated context windows. The text after agents/*.md frontmatter is called the **system prompt**. Because subagents have no access to the parent conversation, their system prompt must be self-contained.
 
+## Skill Routing Rules
+
+When the user's request matches a routing rule below, use the corresponding skill instead of handling the task directly. These skills contain specialized frameworks and domain knowledge that produce higher-quality results than direct editing.
+
+- **prompt-doctor**: Any request to modify, improve, review, diagnose, create, or clean up an LLM prompt, system prompt, agent instruction, CLAUDE.md, or SKILL.md file. This includes removing/adding directives, restructuring prompts, fixing compliance issues, and any prompt-related edits.
+
 ## Repository Map
 
 ```
