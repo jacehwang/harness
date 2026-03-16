@@ -129,6 +129,18 @@ Run `git diff --cached` and perform these checks:
 **Input:** Verified message from Step 4, staged files from Step 2.
 **Output:** Completed git commit.
 
-1. Run `git commit` with the composed message.
+1. Run `git commit` with the composed message. For subject-only commits (no body), use a simple `-m "Subject line"`. For commits with a body, **use a HEREDOC to preserve real newlines** — `-m "text\nmore text"` passes literal `\n`, not line breaks.
+
+   ```bash
+   git commit -m "$(cat <<'EOF'
+   Subject line here
+
+   Body paragraph here, wrapped at 72 characters.
+   EOF
+   )"
+   ```
+
+   Content inside the HEREDOC MUST be flush-left (no leading spaces). Indentation becomes part of the commit message.
+
 2. If the commit fails, report the full error message to the user and **stop**.
 3. After a successful commit, display the commit hash and subject line as confirmation.
