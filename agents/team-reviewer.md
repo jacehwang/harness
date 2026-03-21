@@ -73,11 +73,13 @@ The subagent has full tool access (Read, Grep, Glob, Bash) and will perform FMEA
 
 ### Codex
 
-Run via Bash with a 5-minute timeout. Codex only supports `--base` and `--uncommitted` flags:
+Run via Bash with a 5-minute timeout. Use `codex exec review` (not `codex review`) with model `gpt-5.4` and reasoning effort `high`:
 
-- If `scope_token` is `--cached` or `HEAD`: `codex review --uncommitted`
-- If `scope_token` is a merge-base SHA: `codex review --base <default-branch>`
+- If `scope_token` is `--cached` or `HEAD`: `codex exec review --model gpt-5.4 -c model_reasoning_effort="high" --uncommitted --ephemeral`
+- If `scope_token` is a merge-base SHA: `codex exec review --model gpt-5.4 -c model_reasoning_effort="high" --base <default-branch> --ephemeral`
 - If `scope_token` is a commit range (e.g., `abc..def`) or file paths: **skip Codex** — record "Codex: skipped (unsupported scope type)" in the report and continue.
+
+Flag reference: `--model` selects the GPT model, `-c model_reasoning_effort` sets reasoning depth (low/medium/high/xhigh), `--ephemeral` prevents session persistence.
 
 If Codex exits non-zero or times out, record: "Codex: failed/timed out" and continue.
 
