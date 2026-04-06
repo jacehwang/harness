@@ -1,101 +1,83 @@
 # Prompt Doctor Framework Reference
 
-Use this file only when the prompt needs deeper diagnosis than the main `SKILL.md` provides.
+Deeper diagnostic tools for cases where the SKILL.md workflow needs reinforcement: complex multi-section prompts, ambiguous severity, structural problems, or user-requested detailed analysis.
 
-This file is a reference for analysis, not a required output template. Prefer concrete findings and minimal intervention over exhaustive taxonomy.
+## Defect Taxonomy
 
-## Practical Diagnosis
+Only report defects that are actually present. Use these categories to organize findings, not as a checklist to exhaust.
 
-Start with four questions:
+### Wording defects
 
-1. What is the prompt trying to make the model do?
-2. What must be preserved exactly?
-3. What is most likely to fail in real use?
-4. How much rewriting is actually justified?
+- Ambiguous instruction: a directive that two reasonable readers would interpret differently
+- Inconsistent terminology: alternating names for the same concept (e.g., "ticket" and "issue")
+- Untestable quality target: "write good output" vs "output must include X, Y, Z"
+- Generic role label: "helpful assistant" instead of a domain-specific practitioner identity
 
-If those four questions are enough, do not force a full framework pass.
+### Structural defects
 
-## Defect Checklist
-
-Only report defects that are actually present.
-
-### Clarity defects
-
-- ambiguous instruction wording
-- inconsistent names for the same thing
-- generic role framing that does not help behavior
-- vague quality targets with no testable meaning
-- critical constraints buried in the middle of dense prose
-
-### Structure defects
-
-- long prompt with no section boundaries
-- related constraints scattered across unrelated sections
-- edge cases before core behavior
-- long flat lists with no grouping
-- contradictions between sections
+- No section boundaries in a prompt over ~30 lines
+- Related constraints scattered across unrelated sections
+- Edge cases or exceptions placed before the core behavior they modify
+- Contradictions between sections (check: does section A promise what section B forbids?)
 
 ### Compliance defects
 
-- too many negative instructions instead of positive actions
-- exact counts or rigid limits with no output scaffolding
-- format requirements separated from their exceptions
-- important rules repeated instead of positioned clearly
-- context or examples overwhelming the actual instructions
+- Negative-heavy instructions: more than half of directives say what NOT to do
+- Rigid output constraints (exact counts, strict formats) with no scaffolding or example
+- Format rules separated from their exceptions by unrelated content
+- Critical constraints buried in the middle 60% of the prompt body
 
-### Prompt-specific risks
+### Prompt-type risks
 
-- RAG prompts that blur context and instruction
-- structured-output prompts with unclear schema rules
-- agent prompts that lack fallback or refusal behavior when needed
-- system prompts that lack clear boundaries between instructions and user data
+| Prompt type | Common failure mode |
+|-------------|-------------------|
+| RAG | Context and instruction blur -- model treats retrieved content as directives |
+| Structured output | Schema rules unclear or separated from the output specification |
+| Agent / tool-use | Missing fallback behavior when tools fail or return unexpected results |
+| System prompt | No clear boundary between platform instructions and user-supplied data |
+| Multi-turn chat | State assumptions from earlier turns not validated in later turns |
 
-## Rewrite Scope
+## Diagnostic Procedures
 
-Use rewrite scope to decide effort, not to maximize defect count.
+### Contradiction scan
 
-- `None`: already fit for purpose; optional polish only
-- `Light`: local wording, ordering, or format fixes
-- `Standard`: multiple related fixes or section-level restructuring
-- `Heavy`: full rewrite due to contradictions, structural collapse, or high operational risk
+When a prompt has multiple sections or rule lists:
 
-Borderline rule: choose the lower scope unless the prompt would likely fail in real use.
+1. List each directive that constrains output behavior.
+2. For each pair, check: can both be satisfied simultaneously?
+3. If not, flag the contradiction and note which directive should win based on the prompt's core intent.
 
-## High-Signal Heuristics
+### Salience audit
 
-Prefer these heuristics over rigid doctrine:
+When a prompt is long (50+ lines) or dense:
 
-- Put the most important instruction early.
-- Keep related constraints together.
-- Replace vague wording with testable wording.
-- Convert unnecessary negatives into positive instructions.
-- Preserve exact template syntax.
-- Remove filler before adding safeguards.
-- Add structure only when it improves compliance.
+1. Identify the 3 most important directives.
+2. Check their position: are they in the top 20% or bottom 20% of the prompt?
+3. If any critical directive is in the middle 60%, flag it -- LLM attention is weakest there.
+4. Check for repetition: is the same rule stated multiple times as a substitute for positioning it well?
 
-## 8-Field Reference
+### Structure assessment
 
-Use these as optional explanatory lenses, not mandatory output categories.
+When rewrite scope might be Standard or Heavy:
 
-| Field | What it helps with |
-|------|---------------------|
-| CogPsy | attention, ordering, grouping, salience |
-| InfoDes | sectioning, labels, progressive disclosure |
-| ReqEng | explicit criteria, constraints, edge handling |
-| InsDes | scaffolding, examples, learning alignment |
-| TechCom | parallel phrasing, active voice, precision |
-| Rhetoric | persona credibility, tone, situational fit |
-| Pragma | speech-act fit, redundancy, ambiguity |
-| BehSci | defaults, framing, loss emphasis when justified |
+1. Can each section's purpose be stated in one sentence? If not, the section is doing too much.
+2. Does information flow top-down (identity -> task -> constraints -> format)? If not, the reader must jump around.
+3. Are there more than 2 flat lists with 5+ items? If so, grouping or hierarchy is needed.
+4. Remove any section. Does the prompt still make sense? If yes, the section may be filler.
 
-Use field names only when they help explain why a change matters.
+## Analytical Lenses
 
-## Detailed Diagnosis Triggers
+Use these to explain WHY a change matters, not as mandatory categories.
 
-Do a deeper pass when one or more are true:
+| Lens | Explains changes involving |
+|------|--------------------------|
+| CogPsy | Attention allocation, ordering effects (primacy/recency), chunking, cognitive load |
+| InfoDes | Section labeling, progressive disclosure, visual hierarchy, scanability |
+| ReqEng | Testable acceptance criteria, constraint completeness, edge case coverage |
+| InsDes | Example scaffolding, learning sequence, worked examples vs abstract rules |
+| TechCom | Parallel phrasing, active voice, sentence-level precision, term consistency |
+| Rhetoric | Persona credibility, tone calibration, audience-appropriate register |
+| Pragma | Speech-act clarity (is this a command, suggestion, or observation?), redundancy, ambiguity |
+| BehSci | Default bias, loss framing, anchoring effects in examples |
 
-- the prompt is macro-scale
-- the user asks for a diagnostic report
-- the prompt is high-risk or user-visible at scale
-- the rewrite changes overall structure, not just wording
-- preservation constraints are heavy enough that careless editing is risky
+When citing a lens in the diagnosis, include one sentence explaining the specific mechanism. Example: "CogPsy (primacy effect): the most critical constraint appears at line 47 of 60, where attention is lowest."
