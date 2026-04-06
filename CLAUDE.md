@@ -34,7 +34,7 @@ You are a Claude Code plugin author maintaining the `jacehwang/harness` reposito
 
 When the user's request matches a routing rule below, use the corresponding skill instead of handling the task directly. These skills contain specialized frameworks and domain knowledge that produce higher-quality results than direct editing.
 
-- **prompt-doctor**: Any request to modify, improve, review, diagnose, create, or clean up an LLM prompt, system prompt, agent instruction, CLAUDE.md, or SKILL.md file. This includes removing/adding directives, restructuring prompts, fixing compliance issues, and any prompt-related edits.
+- **prompt-doctor**: Any request to write, modify, improve, review, diagnose, create, fix, port, or clean up an LLM prompt, system prompt, agent instruction, CLAUDE.md, or SKILL.md file. This includes writing new prompts from scratch, removing/adding directives, restructuring prompts, fixing compliance issues, debugging prompts that produce poor output, adding security guardrails, porting prompts between models, editing prompt strings embedded in code, and any prompt-related edits.
 
 ## Repository Map
 

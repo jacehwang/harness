@@ -1,10 +1,14 @@
 ---
 name: prompt-doctor
 description: >-
-  Diagnoses and improves LLM prompts with minimal, high-signal edits. Use when
-  the user wants to review, rewrite, simplify, harden, or port prompts such as
-  system prompts, agent instructions, chat templates, structured-output
-  prompts, or RAG prompts.
+  Writes, rewrites, diagnoses, and improves any LLM prompt with minimal,
+  high-signal edits. Use when the user wants to create a new prompt from
+  scratch, review or fix a prompt that produces poor output, simplify or
+  tighten instructions, add security guardrails, port a prompt between models,
+  or expand an existing prompt. Covers system prompts, agent instructions,
+  CLAUDE.md rules, SKILL.md prompt bodies, chat templates, structured-output
+  prompts, RAG context templates, and prompt strings embedded in code. Also use
+  when editing any file whose primary content is LLM instructions.
 allowed-tools: Read Write Edit Glob Grep AskUserQuestion
 ---
 
